@@ -1,0 +1,224 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../api/client';
+import '../../styles/dashboard.css';
+
+export default function CandidateProfile() {
+  const { profile, refreshProfile } = useAuth();
+  const [activeTab, setActiveTab] = useState('personal');
+  const [candidate, setCandidate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [modal, setModal] = useState(null); // { type: 'education'|'experience'|'skill', data: null|object }
+  const [formData, setFormData] = useState({});
+
+  const loadProfile = async () => {
+    try {
+      if (profile?.id) {
+        const res = await api.getCandidate(profile.id);
+        setCandidate(res.data);
+      }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { loadProfile(); }, [profile]);
+
+  const handleSavePersonal = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api.updateProfile(formData);
+      await refreshProfile();
+      setMessage('Profile updated successfully!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) { setMessage('Error: ' + err.message); }
+    finally { setSaving(false); }
+  };
+
+  const handleSaveModal = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      if (modal.type === 'education') {
+        if (modal.data?.id) await api.updateEducation(modal.data.id, formData);
+        else await api.addEducation(formData);
+      } else if (modal.type === 'experience') {
+        if (modal.data?.id) await api.updateExperience(modal.data.id, formData);
+        else await api.addExperience(formData);
+      } else if (modal.type === 'skill') {
+        if (modal.data?.id) await api.updateSkill(modal.data.id, formData);
+        else await api.addSkill(formData);
+      }
+      setModal(null);
+      loadProfile();
+    } catch (err) { setMessage('Error: ' + err.message); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async (type, id) => {
+    if (!confirm('Delete this entry?')) return;
+    try {
+      if (type === 'education') await api.deleteEducation(id);
+      else if (type === 'experience') await api.deleteExperience(id);
+      else if (type === 'skill') await api.deleteSkill(id);
+      loadProfile();
+    } catch (err) { console.error(err); }
+  };
+
+  const openModal = (type, data = null) => {
+    setFormData(data || {});
+    setModal({ type, data });
+  };
+
+  useEffect(() => {
+    if (candidate && activeTab === 'personal') {
+      setFormData({ full_name: candidate.full_name, phone: candidate.phone, headline: candidate.headline, summary: candidate.summary, current_location: candidate.current_location, expected_salary_min: candidate.expected_salary_min, expected_salary_max: candidate.expected_salary_max, is_open_to_work: candidate.is_open_to_work });
+    }
+  }, [candidate, activeTab]);
+
+  if (loading) return <div className="dashboard"><div className="page-loader"><div className="spinner" /></div></div>;
+
+  const vStatusIcon = { verified: '✅', pending: '⏳', in_progress: '🔄', rejected: '❌' };
+
+  return (
+    <div className="dashboard animate-fade-in-up">
+      <div className="dashboard__header">
+        <h1 className="dashboard__welcome">My Profile</h1>
+        <p className="dashboard__subtitle">Manage your professional information</p>
+      </div>
+
+      {message && <div style={{ padding: 'var(--space-3) var(--space-4)', background: message.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(0,217,148,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', color: message.startsWith('Error') ? 'var(--color-danger-400)' : 'var(--color-accent-400)', fontSize: 'var(--font-size-sm)' }}>{message}</div>}
+
+      <div className="tabs">
+        {['personal', 'education', 'experience', 'skills'].map(t => (
+          <button key={t} className={`tab ${activeTab === t ? 'tab--active' : ''}`} onClick={() => setActiveTab(t)}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
+        ))}
+      </div>
+
+      {activeTab === 'personal' && (
+        <div className="card" style={{ padding: 'var(--space-8)' }}>
+          <form onSubmit={handleSavePersonal} className="auth-form">
+            <div className="auth-row">
+              <div className="auth-field"><label>Full Name</label><input type="text" value={formData.full_name || ''} onChange={e => setFormData({...formData, full_name: e.target.value})} /></div>
+              <div className="auth-field"><label>Phone</label><input type="tel" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
+            </div>
+            <div className="auth-field"><label>Professional Headline</label><input type="text" value={formData.headline || ''} onChange={e => setFormData({...formData, headline: e.target.value})} /></div>
+            <div className="auth-field"><label>Summary</label><textarea rows={4} value={formData.summary || ''} onChange={e => setFormData({...formData, summary: e.target.value})} style={{ resize: 'vertical' }} /></div>
+            <div className="auth-row">
+              <div className="auth-field"><label>Current Location</label><input type="text" value={formData.current_location || ''} onChange={e => setFormData({...formData, current_location: e.target.value})} /></div>
+              <div className="auth-field"><label>Open to Work</label><select value={formData.is_open_to_work ? '1' : '0'} onChange={e => setFormData({...formData, is_open_to_work: e.target.value === '1' ? 1 : 0})}><option value="1">Yes</option><option value="0">No</option></select></div>
+            </div>
+            <div className="auth-row">
+              <div className="auth-field"><label>Expected Salary Min (₹/year)</label><input type="number" value={formData.expected_salary_min || ''} onChange={e => setFormData({...formData, expected_salary_min: e.target.value})} /></div>
+              <div className="auth-field"><label>Expected Salary Max (₹/year)</label><input type="number" value={formData.expected_salary_max || ''} onChange={e => setFormData({...formData, expected_salary_max: e.target.value})} /></div>
+            </div>
+            <button type="submit" className="btn btn--primary" disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</button>
+          </form>
+        </div>
+      )}
+
+      {activeTab === 'education' && (
+        <div>
+          <button className="btn btn--primary" style={{ marginBottom: 'var(--space-4)' }} onClick={() => openModal('education')}>+ Add Education</button>
+          <div className="job-cards">
+            {candidate?.education?.map(edu => (
+              <div key={edu.id} className="card" style={{ padding: 'var(--space-5)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 'var(--font-size-md)', marginBottom: '4px' }}>{edu.degree} in {edu.field_of_study}</div>
+                    <div style={{ color: 'var(--color-primary-400)', marginBottom: '4px' }}>{edu.institution}</div>
+                    <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)' }}>{edu.start_year} - {edu.end_year} · {edu.grade}</div>
+                    <span className={`v-badge v-badge--${edu.verification_status}`}>{vStatusIcon[edu.verification_status]} {edu.verification_status}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn--secondary btn--sm" onClick={() => openModal('education', edu)}>Edit</button>
+                    <button className="btn btn--danger btn--sm" onClick={() => handleDelete('education', edu.id)}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'experience' && (
+        <div>
+          <button className="btn btn--primary" style={{ marginBottom: 'var(--space-4)' }} onClick={() => openModal('experience')}>+ Add Experience</button>
+          <div className="job-cards">
+            {candidate?.experience?.map(exp => (
+              <div key={exp.id} className="card" style={{ padding: 'var(--space-5)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 'var(--font-size-md)', marginBottom: '4px' }}>{exp.job_title}</div>
+                    <div style={{ color: 'var(--color-primary-400)', marginBottom: '4px' }}>{exp.company_name}</div>
+                    <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)' }}>{exp.start_date} - {exp.end_date || 'Present'}</div>
+                    {exp.description && <p style={{ marginTop: '8px', fontSize: 'var(--font-size-sm)' }}>{exp.description}</p>}
+                    <span className={`v-badge v-badge--${exp.verification_status}`}>{vStatusIcon[exp.verification_status]} {exp.verification_status}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn--secondary btn--sm" onClick={() => openModal('experience', exp)}>Edit</button>
+                    <button className="btn btn--danger btn--sm" onClick={() => handleDelete('experience', exp.id)}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'skills' && (
+        <div>
+          <button className="btn btn--primary" style={{ marginBottom: 'var(--space-4)' }} onClick={() => openModal('skill')}>+ Add Skill</button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+            {candidate?.skills?.map(skill => (
+              <div key={skill.id} className="card" style={{ padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)', minWidth: '250px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, marginBottom: '2px' }}>{skill.skill_name}</div>
+                  <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)' }}>{skill.proficiency_level} · {skill.years_of_experience}yr</div>
+                  {skill.is_verified ? <span className="v-badge v-badge--verified">✅ Verified</span> : <span className="v-badge v-badge--pending">⏳ Unverified</span>}
+                  {skill.assessment_score && <span style={{ marginLeft: '8px', fontSize: 'var(--font-size-xs)', color: 'var(--color-accent-400)' }}>Score: {skill.assessment_score}%</span>}
+                </div>
+                <button className="btn btn--danger btn--sm" onClick={() => handleDelete('skill', skill.id)}>×</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal */}
+      {modal && (
+        <div className="modal-overlay" onClick={() => setModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal__header">
+              <h3 className="modal__title">{modal.data ? 'Edit' : 'Add'} {modal.type}</h3>
+              <button className="modal__close" onClick={() => setModal(null)}>×</button>
+            </div>
+            <form onSubmit={handleSaveModal} className="auth-form">
+              {modal.type === 'education' && (<>
+                <div className="auth-field"><label>Institution *</label><input required value={formData.institution || ''} onChange={e => setFormData({...formData, institution: e.target.value})} /></div>
+                <div className="auth-row"><div className="auth-field"><label>Degree *</label><input required value={formData.degree || ''} onChange={e => setFormData({...formData, degree: e.target.value})} /></div><div className="auth-field"><label>Field of Study</label><input value={formData.field_of_study || ''} onChange={e => setFormData({...formData, field_of_study: e.target.value})} /></div></div>
+                <div className="auth-row"><div className="auth-field"><label>Start Year</label><input type="number" value={formData.start_year || ''} onChange={e => setFormData({...formData, start_year: e.target.value})} /></div><div className="auth-field"><label>End Year</label><input type="number" value={formData.end_year || ''} onChange={e => setFormData({...formData, end_year: e.target.value})} /></div></div>
+                <div className="auth-field"><label>Grade/CGPA</label><input value={formData.grade || ''} onChange={e => setFormData({...formData, grade: e.target.value})} /></div>
+              </>)}
+              {modal.type === 'experience' && (<>
+                <div className="auth-row"><div className="auth-field"><label>Company *</label><input required value={formData.company_name || ''} onChange={e => setFormData({...formData, company_name: e.target.value})} /></div><div className="auth-field"><label>Job Title *</label><input required value={formData.job_title || ''} onChange={e => setFormData({...formData, job_title: e.target.value})} /></div></div>
+                <div className="auth-row"><div className="auth-field"><label>Start Date *</label><input type="date" required value={formData.start_date || ''} onChange={e => setFormData({...formData, start_date: e.target.value})} /></div><div className="auth-field"><label>End Date</label><input type="date" value={formData.end_date || ''} onChange={e => setFormData({...formData, end_date: e.target.value})} placeholder="Leave empty if current" /></div></div>
+                <div className="auth-field"><label>Description</label><textarea rows={3} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} /></div>
+              </>)}
+              {modal.type === 'skill' && (<>
+                <div className="auth-field"><label>Skill Name *</label><input required value={formData.skill_name || ''} onChange={e => setFormData({...formData, skill_name: e.target.value})} placeholder="e.g. Python, React, SQL" /></div>
+                <div className="auth-row"><div className="auth-field"><label>Proficiency</label><select value={formData.proficiency_level || 'intermediate'} onChange={e => setFormData({...formData, proficiency_level: e.target.value})}><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="expert">Expert</option></select></div><div className="auth-field"><label>Years of Experience</label><input type="number" step="0.5" value={formData.years_of_experience || ''} onChange={e => setFormData({...formData, years_of_experience: e.target.value})} /></div></div>
+              </>)}
+              <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn--secondary" onClick={() => setModal(null)}>Cancel</button>
+                <button type="submit" className="btn btn--primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
