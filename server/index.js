@@ -18,11 +18,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: process.env.NODE_ENV === 'production' ? true : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -43,6 +43,13 @@ app.use('/api/feedback', feedbackRoutes);
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'TrueHire API is running', timestamp: new Date().toISOString() });
+});
+
+// Serve frontend in production
+const distPath = join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
+app.get('*', (req, res) => {
+  res.sendFile(join(distPath, 'index.html'));
 });
 
 // Error handling
