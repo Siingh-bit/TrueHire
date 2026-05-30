@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Layout/Navbar';
 import Landing from './pages/Landing';
@@ -71,6 +72,7 @@ export default function App() {
           </>
         } />
       </Routes>
+      <SpeedInsights />
     </div>
   );
 }
