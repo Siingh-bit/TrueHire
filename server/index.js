@@ -14,8 +14,13 @@ import applicationRoutes from './routes/applications.js';
 import assessmentRoutes from './routes/assessments.js';
 import feedbackRoutes from './routes/feedback.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+let __dirname = '';
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  __dirname = dirname(__filename);
+} catch (e) {
+  __dirname = process.cwd();
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -48,7 +53,7 @@ app.get('/api/health', (req, res) => {
 // Serve frontend in production
 const distPath = join(__dirname, '..', 'dist');
 app.use(express.static(distPath));
-app.get('*', (req, res) => {
+app.get(/(.*)/, (req, res) => {
   res.sendFile(join(distPath, 'index.html'));
 });
 
@@ -62,15 +67,19 @@ app.use((err, req, res, next) => {
 try {
   initDB();
   seedDB();
-  app.listen(PORT, () => {
-    console.log(`\n🚀 TrueHire API Server running at http://localhost:${PORT}`);
-    console.log(`📖 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`\n📧 Demo Accounts (password: password123):`);
-    console.log(`   Candidate: priya.sharma@email.com`);
-    console.log(`   Employer:  hr@technova.com`);
-    console.log(`   Admin:     admin@truehire.com\n`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+      console.log(`\n🚀 TrueHire API Server running at http://localhost:${PORT}`);
+      console.log(`📖 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`\n📧 Demo Accounts (password: password123):`);
+      console.log(`   Candidate: priya.sharma@email.com`);
+      console.log(`   Employer:  hr@technova.com`);
+      console.log(`   Admin:     admin@truehire.com\n`);
+    });
+  }
 } catch (err) {
   console.error('Failed to start server:', err);
-  process.exit(1);
+  if (!process.env.VERCEL) process.exit(1);
 }
+
+export default app;

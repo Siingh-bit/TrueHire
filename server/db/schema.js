@@ -2,10 +2,15 @@ import Database from 'better-sqlite3';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+let __dirname = '';
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  __dirname = dirname(__filename);
+} catch (e) {
+  __dirname = process.cwd();
+}
 
-const dbPath = join(__dirname, 'truehire.db');
+const dbPath = process.env.VERCEL ? '/tmp/truehire.db' : join(__dirname, 'truehire.db');
 const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
