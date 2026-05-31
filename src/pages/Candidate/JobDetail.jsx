@@ -12,6 +12,8 @@ export default function JobDetail() {
   const [showApply, setShowApply] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
   const [message, setMessage] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   useEffect(() => {
     api.getJob(id).then(res => setJob(res.data)).catch(() => navigate('/candidate/jobs')).finally(() => setLoading(false));
@@ -20,7 +22,10 @@ export default function JobDetail() {
   const handleApply = async () => {
     setApplying(true);
     try {
-      await api.applyForJob(job.id, coverLetter);
+      const urlParams = new URLSearchParams(window.location.search);
+      const referrer_id = urlParams.get('referrer') ? Number(urlParams.get('referrer')) : null;
+
+      await api.applyForJob(job.id, coverLetter, videoUrl, referrer_id);
       setMessage('Application submitted successfully!');
       setShowApply(false);
       // Refresh job data
@@ -97,9 +102,28 @@ export default function JobDetail() {
                 <label>Cover Letter (Optional)</label>
                 <textarea rows={5} value={coverLetter} onChange={e => setCoverLetter(e.target.value)} placeholder="Tell the employer why you're a great fit..." style={{ width: '100%', padding: 'var(--space-3) var(--space-4)', background: 'var(--color-bg-input)', border: '1px solid var(--color-border-primary)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-primary)', resize: 'vertical', outline: 'none' }} />
               </div>
+              <div className="auth-field" style={{ marginBottom: 'var(--space-4)' }}>
+                <label>Video Pitch (TikTok-style 60s intro)</label>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                  <input type="file" accept="video/mp4,video/webm" onChange={async (e) => {
+                    if(!e.target.files[0]) return;
+                    setUploadingVideo(true);
+                    const fd = new FormData(); fd.append('video', e.target.files[0]);
+                    try {
+                      const res = await fetch('/api/applications/upload-video', { method: 'POST', headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`}, body: fd});
+                      const data = await res.json();
+                      if(data.success) setVideoUrl(data.url);
+                      else setMessage(data.message);
+                    } catch(err) { setMessage('Video upload failed'); }
+                    finally { setUploadingVideo(false); }
+                  }} className="btn btn--secondary" style={{ flex: 1 }} />
+                  {uploadingVideo && <span style={{fontSize: 'var(--font-size-sm)'}}>Uploading...</span>}
+                  {videoUrl && <span style={{color: 'var(--color-primary-400)'}}>✅ Uploaded</span>}
+                </div>
+              </div>
               <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                 <button className="btn btn--secondary" onClick={() => setShowApply(false)}>Cancel</button>
-                <button className="btn btn--primary" onClick={handleApply} disabled={applying}>{applying ? 'Submitting...' : 'Submit Application'}</button>
+                <button className="btn btn--primary" onClick={handleApply} disabled={applying || uploadingVideo}>{applying ? 'Submitting...' : 'Submit Application'}</button>
               </div>
             </div>
           )}
@@ -126,6 +150,24 @@ export default function JobDetail() {
               <p>📊 Assessment: {job.requires_assessment ? 'Required' : 'Not required'}</p>
             </div>
           </div>
+
+          {job.bounty_amount > 0 && (
+            <div className="card" style={{ padding: 'var(--space-6)', background: 'rgba(0, 217, 148, 0.05)', border: '1px solid rgba(0, 217, 148, 0.2)' }}>
+              <h3 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-accent-400)' }}>💰 Referral Bounty: ₹{job.bounty_amount}</h3>
+              <p style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>Refer a friend. If they get hired, you earn the bounty!</p>
+              <button className="btn btn--primary" style={{ width: '100%' }} onClick={() => {
+                const url = new URL(window.location.href);
+                // In a real app we'd get candidate's user ID from context, assuming profile.id or similar.
+                // Let's parse jwt to get our user id safely, or just get it from local storage?
+                // We'll just generate the link if we can't reliably get user_id here without auth context. 
+                // Actually, let's just construct the link and ask them to copy.
+                // But we don't have the user ID readily available in state without AuthContext.
+                // Wait! We can import useAuth to get user id!
+                navigator.clipboard.writeText(`${window.location.origin}/candidate/jobs/${job.id}?referrer=${JSON.parse(atob(localStorage.getItem('token').split('.')[1])).id}`);
+                setMessage('Referral link copied to clipboard!');
+              }}>Generate & Copy Link</button>
+            </div>
+          )}
         </div>
       </div>
     </div>

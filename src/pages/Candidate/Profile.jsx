@@ -12,6 +12,45 @@ export default function CandidateProfile() {
   const [message, setMessage] = useState('');
   const [modal, setModal] = useState(null); // { type: 'education'|'experience'|'skill', data: null|object }
   const [formData, setFormData] = useState({});
+  const [parsingResume, setParsingResume] = useState(false);
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setParsingResume(true);
+    setMessage('Parsing resume... please wait.');
+    try {
+      const uploadData = new FormData();
+      uploadData.append('resume', file);
+      
+      const res = await fetch('/api/candidates/parse-resume', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: uploadData
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setFormData(prev => ({
+          ...prev,
+          phone: data.data.phone || prev.phone,
+        }));
+        
+        let msg = 'Resume parsed! ';
+        if (data.data.phone) msg += `Phone extracted. `;
+        if (data.data.skills?.length) msg += `Detected skills: ${data.data.skills.join(', ')} (Please add them below manually for accuracy).`;
+        setMessage(msg);
+      } else {
+        setMessage('Error: ' + data.message);
+      }
+    } catch (err) {
+      setMessage('Error parsing resume.');
+    } finally {
+      setParsingResume(false);
+      e.target.value = '';
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -99,6 +138,11 @@ export default function CandidateProfile() {
 
       {activeTab === 'personal' && (
         <div className="card" style={{ padding: 'var(--space-8)' }}>
+          <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+            <h3 style={{ marginBottom: 'var(--space-2)' }}>Auto-Fill Profile</h3>
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>Upload your resume (PDF) to automatically extract details like your phone number and skills.</p>
+            <input type="file" accept="application/pdf" onChange={handleResumeUpload} disabled={parsingResume} className="btn btn--secondary" style={{ width: '100%', cursor: parsingResume ? 'wait' : 'pointer' }} />
+          </div>
           <form onSubmit={handleSavePersonal} className="auth-form">
             <div className="auth-row">
               <div className="auth-field"><label>Full Name</label><input type="text" value={formData.full_name || ''} onChange={e => setFormData({...formData, full_name: e.target.value})} /></div>

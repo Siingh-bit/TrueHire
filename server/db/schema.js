@@ -108,6 +108,7 @@ export function initDB() {
       max_experience_years INTEGER,
       salary_min INTEGER,
       salary_max INTEGER,
+      bounty_amount INTEGER DEFAULT 0,
       location TEXT,
       job_type TEXT CHECK(job_type IN ('full-time','part-time','contract','remote')),
       status TEXT DEFAULT 'active' CHECK(status IN ('active','paused','closed')),
@@ -121,8 +122,11 @@ export function initDB() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       job_id INTEGER REFERENCES jobs(id),
       candidate_id INTEGER REFERENCES candidate_profiles(id),
+      referrer_id INTEGER REFERENCES users(id),
       status TEXT DEFAULT 'applied' CHECK(status IN ('applied','screening','assessment_pending','assessment_completed','shortlisted','interview','offered','hired','rejected')),
       cover_letter TEXT,
+      video_cover_letter_url TEXT,
+      rejection_reason TEXT,
       assessment_score REAL,
       assessment_completed_at DATETIME,
       applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -170,6 +174,11 @@ export function initDB() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  try { db.exec("ALTER TABLE jobs ADD COLUMN bounty_amount INTEGER DEFAULT 0"); } catch(e) {}
+  try { db.exec("ALTER TABLE applications ADD COLUMN rejection_reason TEXT"); } catch(e) {}
+  try { db.exec("ALTER TABLE applications ADD COLUMN video_cover_letter_url TEXT"); } catch(e) {}
+  try { db.exec("ALTER TABLE applications ADD COLUMN referrer_id INTEGER REFERENCES users(id)"); } catch(e) {}
 
   console.log('✅ Database tables initialized');
 }

@@ -11,6 +11,16 @@ export default function Applicants() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
+  const [rejectingApp, setRejectingApp] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+
+  const REJECTION_REASONS = [
+    'Requires more experience',
+    'Missing specific skill',
+    'Salary expectations mismatch',
+    'Position filled',
+    'Other'
+  ];
 
   const loadApplicants = () => {
     api.getJobApplications(jobId).then(res => setApplicants(res.data || [])).finally(() => setLoading(false));
@@ -18,9 +28,20 @@ export default function Applicants() {
 
   useEffect(() => { loadApplicants(); }, [jobId]);
 
-  const updateStatus = async (appId, status) => {
-    await api.updateApplicationStatus(appId, status);
+  const updateStatus = async (appId, status, reason = null) => {
+    if (status === 'rejected' && !reason) {
+      setRejectingApp(appId);
+      return;
+    }
+    await api.updateApplicationStatus(appId, status, reason);
+    setRejectingApp(null);
+    setRejectionReason('');
     loadApplicants();
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectionReason) return;
+    updateStatus(rejectingApp, 'rejected', rejectionReason);
   };
 
   if (loading) return <div className="dashboard"><div className="page-loader"><div className="spinner" /></div></div>;
@@ -92,6 +113,12 @@ export default function Applicants() {
 
               {expanded === app.id && (
                 <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border-primary)' }}>
+                  {app.video_cover_letter_url && (
+                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                      <h4 style={{ marginBottom: '4px', fontSize: 'var(--font-size-sm)' }}>Video Pitch</h4>
+                      <video src={app.video_cover_letter_url} controls style={{ width: '100%', maxWidth: '400px', borderRadius: 'var(--radius-md)' }} />
+                    </div>
+                  )}
                   {app.cover_letter && <div style={{ marginBottom: 'var(--space-4)' }}><h4 style={{ marginBottom: '4px', fontSize: 'var(--font-size-sm)' }}>Cover Letter</h4><p style={{ fontSize: 'var(--font-size-sm)', fontStyle: 'italic' }}>"{app.cover_letter}"</p></div>}
                   {app.assessment && (
                     <div style={{ marginBottom: 'var(--space-4)' }}>
@@ -105,6 +132,32 @@ export default function Applicants() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Rejection Modal */}
+      {rejectingApp && (
+        <div className="modal-overlay" onClick={() => setRejectingApp(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal__header">
+              <h3 className="modal__title">Reject Application</h3>
+              <button className="modal__close" onClick={() => setRejectingApp(null)}>×</button>
+            </div>
+            <div className="auth-form">
+              <p style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-3)' }}>To provide constructive feedback, please select a reason for rejection.</p>
+              <div className="auth-field">
+                <label>Reason</label>
+                <select value={rejectionReason} onChange={e => setRejectionReason(e.target.value)}>
+                  <option value="">Select a reason...</option>
+                  {REJECTION_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
+                <button className="btn btn--secondary" onClick={() => setRejectingApp(null)}>Cancel</button>
+                <button className="btn btn--danger" disabled={!rejectionReason} onClick={handleConfirmReject}>Confirm Reject</button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

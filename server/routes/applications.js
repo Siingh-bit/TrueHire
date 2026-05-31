@@ -71,6 +71,33 @@ router.get('/job/:jobId', authMiddleware, (req, res) => {
   }
 });
 
+import multer from 'multer';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const uploadDir = join(__dirname, '../../public/uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '-'))
+});
+const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }); // 25MB max
+
+// POST /api/applications/upload-video
+router.post('/upload-video', authMiddleware, upload.single('video'), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No video uploaded' });
+    res.json({ success: true, url: '/uploads/' + req.file.filename });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Upload failed' });
+  }
+});
+
 // POST /api/applications - Apply for a job
 router.post('/', authMiddleware, (req, res) => {
   try {
@@ -79,7 +106,7 @@ router.post('/', authMiddleware, (req, res) => {
     const profile = db.prepare('SELECT * FROM candidate_profiles WHERE user_id = ?').get(req.user.id);
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
 
-    const { job_id, cover_letter } = req.body;
+    const { job_id, cover_letter, video_cover_letter_url, referrer_id } = req.body;
 
     const job = db.prepare('SELECT * FROM jobs WHERE id = ? AND status = ?').get(job_id, 'active');
     if (!job) return res.status(404).json({ success: false, message: 'Job not found or closed' });
@@ -93,7 +120,7 @@ router.post('/', authMiddleware, (req, res) => {
 
     const initialStatus = job.requires_assessment ? 'assessment_pending' : 'applied';
 
-    const result = db.prepare('INSERT INTO applications (job_id, candidate_id, status, cover_letter) VALUES (?, ?, ?, ?)').run(job_id, profile.id, initialStatus, cover_letter);
+    const result = db.prepare('INSERT INTO applications (job_id, candidate_id, status, cover_letter, video_cover_letter_url, referrer_id) VALUES (?, ?, ?, ?, ?, ?)').run(job_id, profile.id, initialStatus, cover_letter, video_cover_letter_url, referrer_id || null);
 
     const application = db.prepare('SELECT * FROM applications WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json({ success: true, data: application });
@@ -106,7 +133,7 @@ router.post('/', authMiddleware, (req, res) => {
 // PUT /api/applications/:id/status - Update application status (employer)
 router.put('/:id/status', authMiddleware, (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, rejection_reason } = req.body;
     const application = db.prepare('SELECT a.*, j.employer_id FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.id = ?').get(req.params.id);
     if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
 
@@ -115,7 +142,7 @@ router.put('/:id/status', authMiddleware, (req, res) => {
       if (application.employer_id !== profile.id) return res.status(403).json({ success: false, message: 'Not your job posting' });
     }
 
-    db.prepare('UPDATE applications SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(status, req.params.id);
+    db.prepare('UPDATE applications SET status = ?, rejection_reason = COALESCE(?, rejection_reason), updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(status, rejection_reason || null, req.params.id);
 
     const updated = db.prepare('SELECT * FROM applications WHERE id = ?').get(req.params.id);
     res.json({ success: true, data: updated });

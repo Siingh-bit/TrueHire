@@ -75,6 +75,12 @@ export default function Applications() {
                   <Link to={`/assessment/${app.assessment.id}/results`} className="btn btn--secondary btn--sm">📊 View Results</Link>
                 </div>
               )}
+              {app.status === 'rejected' && app.rejection_reason && (
+                <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--radius-md)' }}>
+                  <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-danger-400)' }}>Feedback: </span>
+                  <span style={{ fontSize: 'var(--font-size-sm)' }}>{app.rejection_reason}</span>
+                </div>
+              )}
             </div>
           ))}
         </div>

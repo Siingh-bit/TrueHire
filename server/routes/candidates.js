@@ -1,8 +1,42 @@
 import { Router } from 'express';
 import db from '../db/schema.js';
 import { authMiddleware } from '../middleware/auth.js';
+import multer from 'multer';
+import pdfParse from 'pdf-parse';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
+// POST /api/candidates/parse-resume
+router.post('/parse-resume', authMiddleware, upload.single('resume'), async (req, res) => {
+  try {
+    if (req.user.role !== 'candidate') return res.status(403).json({ success: false, message: 'Not a candidate' });
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+
+    const data = await pdfParse(req.file.buffer);
+    const text = data.text;
+
+    // Simple regex parsing
+    const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    const phoneMatch = text.match(/\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
+    
+    // Simulate skill extraction
+    const possibleSkills = ['javascript', 'react', 'node', 'python', 'java', 'sql', 'docker', 'aws', 'css', 'html', 'git', 'typescript', 'mongodb', 'express'];
+    const extractedSkills = possibleSkills.filter(skill => text.toLowerCase().includes(skill));
+
+    res.json({
+      success: true,
+      data: {
+        email: emailMatch ? emailMatch[0] : '',
+        phone: phoneMatch ? phoneMatch[0] : '',
+        skills: extractedSkills.slice(0, 5)
+      }
+    });
+  } catch (err) {
+    console.error('Parse resume error:', err);
+    res.status(500).json({ success: false, message: 'Failed to parse resume' });
+  }
+});
 
 // GET /api/candidates - List candidates (employers can browse)
 router.get('/', authMiddleware, (req, res) => {

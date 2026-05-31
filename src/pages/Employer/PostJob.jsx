@@ -7,7 +7,7 @@ const COMMON_SKILLS = ['JavaScript','Python','Java','React','Node.js','SQL','AWS
 
 export default function PostJob() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ title: '', description: '', required_skills: [], preferred_skills: [], min_experience_years: 3, max_experience_years: 10, salary_min: '', salary_max: '', location: '', job_type: 'full-time', requires_assessment: true, assessment_config: { difficulty: 'medium', duration: 45 }, application_deadline: '' });
+  const [formData, setFormData] = useState({ title: '', description: '', required_skills: [], preferred_skills: [], min_experience_years: 3, max_experience_years: 10, salary_min: '', salary_max: '', bounty_amount: '', location: '', job_type: 'full-time', requires_assessment: true, assessment_config: { difficulty: 'medium', duration: 45 }, application_deadline: '' });
   const [skillInput, setSkillInput] = useState('');
   const [prefSkillInput, setPrefSkillInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -40,7 +40,7 @@ export default function PostJob() {
     if (formData.required_skills.length === 0) { setError('Add at least one required skill'); return; }
     setLoading(true); setError('');
     try {
-      await api.createJob({ ...formData, salary_min: Number(formData.salary_min), salary_max: Number(formData.salary_max) });
+      await api.createJob({ ...formData, salary_min: Number(formData.salary_min), salary_max: Number(formData.salary_max), bounty_amount: Number(formData.bounty_amount) });
       navigate('/employer/jobs');
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
@@ -69,6 +69,8 @@ export default function PostJob() {
             <div className="auth-field"><label>Salary Min (₹/year)</label><input type="number" value={formData.salary_min} onChange={e => update('salary_min', e.target.value)} placeholder="e.g. 1500000" /></div>
             <div className="auth-field"><label>Salary Max (₹/year)</label><input type="number" value={formData.salary_max} onChange={e => update('salary_max', e.target.value)} placeholder="e.g. 2500000" /></div>
           </div>
+
+          <div className="auth-field"><label>Crowdsourced Bounty (₹) - Optional</label><input type="number" value={formData.bounty_amount} onChange={e => update('bounty_amount', e.target.value)} placeholder="Reward for successful referral (e.g. 25000)" /></div>
 
           <div className="auth-row">
             <div className="auth-field"><label>Min Experience (years)</label><input type="number" min="3" value={formData.min_experience_years} onChange={e => update('min_experience_years', Number(e.target.value))} /></div>

@@ -100,17 +100,17 @@ router.post('/', authMiddleware, (req, res) => {
     const profile = db.prepare('SELECT id FROM employer_profiles WHERE user_id = ?').get(req.user.id);
     if (!profile) return res.status(404).json({ success: false, message: 'Employer profile not found' });
 
-    const { title, description, required_skills, preferred_skills, min_experience_years = 3, max_experience_years, salary_min, salary_max, location, job_type, requires_assessment = true, assessment_config, application_deadline } = req.body;
+    const { title, description, required_skills, preferred_skills, min_experience_years = 3, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment = true, assessment_config, application_deadline } = req.body;
 
     if (!title || !description || !required_skills) {
       return res.status(400).json({ success: false, message: 'Title, description, and required skills are required' });
     }
 
-    const result = db.prepare(`INSERT INTO jobs (employer_id, title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, location, job_type, requires_assessment, assessment_config, application_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    const result = db.prepare(`INSERT INTO jobs (employer_id, title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment, assessment_config, application_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       profile.id, title, description,
       JSON.stringify(required_skills),
       JSON.stringify(preferred_skills || []),
-      min_experience_years, max_experience_years, salary_min, salary_max, location, job_type,
+      min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount || 0, location, job_type,
       requires_assessment ? 1 : 0,
       assessment_config ? JSON.stringify(assessment_config) : null,
       application_deadline
@@ -133,13 +133,13 @@ router.put('/:id', authMiddleware, (req, res) => {
     const job = db.prepare('SELECT * FROM jobs WHERE id = ? AND employer_id = ?').get(req.params.id, profile.id);
     if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
 
-    const { title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, location, job_type, status, requires_assessment, assessment_config, application_deadline } = req.body;
+    const { title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, status, requires_assessment, assessment_config, application_deadline } = req.body;
 
-    db.prepare(`UPDATE jobs SET title=COALESCE(?,title), description=COALESCE(?,description), required_skills=COALESCE(?,required_skills), preferred_skills=COALESCE(?,preferred_skills), min_experience_years=COALESCE(?,min_experience_years), max_experience_years=COALESCE(?,max_experience_years), salary_min=COALESCE(?,salary_min), salary_max=COALESCE(?,salary_max), location=COALESCE(?,location), job_type=COALESCE(?,job_type), status=COALESCE(?,status), requires_assessment=COALESCE(?,requires_assessment), assessment_config=COALESCE(?,assessment_config), application_deadline=COALESCE(?,application_deadline) WHERE id=?`).run(
+    db.prepare(`UPDATE jobs SET title=COALESCE(?,title), description=COALESCE(?,description), required_skills=COALESCE(?,required_skills), preferred_skills=COALESCE(?,preferred_skills), min_experience_years=COALESCE(?,min_experience_years), max_experience_years=COALESCE(?,max_experience_years), salary_min=COALESCE(?,salary_min), salary_max=COALESCE(?,salary_max), bounty_amount=COALESCE(?,bounty_amount), location=COALESCE(?,location), job_type=COALESCE(?,job_type), status=COALESCE(?,status), requires_assessment=COALESCE(?,requires_assessment), assessment_config=COALESCE(?,assessment_config), application_deadline=COALESCE(?,application_deadline) WHERE id=?`).run(
       title, description,
       required_skills ? JSON.stringify(required_skills) : null,
       preferred_skills ? JSON.stringify(preferred_skills) : null,
-      min_experience_years, max_experience_years, salary_min, salary_max, location, job_type, status,
+      min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, status,
       requires_assessment != null ? (requires_assessment ? 1 : 0) : null,
       assessment_config ? JSON.stringify(assessment_config) : null,
       application_deadline, req.params.id
