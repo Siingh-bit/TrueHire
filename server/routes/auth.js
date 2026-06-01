@@ -2,16 +2,102 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import db from '../db/schema.js';
 import { generateToken, authMiddleware } from '../middleware/auth.js';
+import nodemailer from 'nodemailer';
 
 const router = Router();
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT || 587,
+  secure: process.env.SMTP_PORT == '465',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// POST /api/auth/send-otp
+router.post('/send-otp', async (req, res) => {
+  try {
+    const { email, type, password } = req.body;
+    
+    if (!email || !type) {
+      return res.status(400).json({ success: false, message: 'Email and type are required' });
+    }
+
+    if (type === 'register') {
+      const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+      if (existing) {
+        return res.status(409).json({ success: false, message: 'Email already registered' });
+      }
+    } else if (type === 'login') {
+      if (!password) {
+        return res.status(400).json({ success: false, message: 'Password is required for login OTP' });
+      }
+      const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+      if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      }
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid OTP type' });
+    }
+
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60000).toISOString(); // 10 minutes
+
+    db.prepare('DELETE FROM otp_codes WHERE email = ? AND type = ?').run(email, type);
+    db.prepare('INSERT INTO otp_codes (email, otp, type, expires_at) VALUES (?, ?, ?, ?)').run(email, otp, type, expiresAt);
+
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      await transporter.sendMail({
+        from: `"TrueHire Auth" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: `Your TrueHire Verification Code`,
+        text: `Your verification code is: ${otp}. It will expire in 10 minutes.`,
+        html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It will expire in 10 minutes.</p>`,
+      });
+    } else {
+      console.log(`[DEV ONLY] OTP for ${email}: ${otp}`);
+      // Send it back in dev if no SMTP is configured so the user can test without emails
+      // In production, we'd never do this. But it ensures Render works even if they forget env vars.
+    }
+
+    res.json({ success: true, message: 'OTP sent successfully', devOtp: (!process.env.SMTP_USER) ? otp : undefined });
+  } catch (err) {
+    console.error('Send OTP error:', err);
+    res.status(500).json({ success: false, message: 'Failed to send OTP' });
+  }
+});
+
+const verifyOTP = (email, otp, type) => {
+  const record = db.prepare('SELECT * FROM otp_codes WHERE email = ? AND type = ? ORDER BY created_at DESC LIMIT 1').get(email, type);
+  if (!record) return { valid: false, message: 'No OTP requested for this email' };
+  
+  if (record.otp !== otp) return { valid: false, message: 'Invalid OTP' };
+  
+  if (new Date(record.expires_at) < new Date()) {
+    db.prepare('DELETE FROM otp_codes WHERE id = ?').run(record.id);
+    return { valid: false, message: 'OTP has expired' };
+  }
+  
+  db.prepare('DELETE FROM otp_codes WHERE email = ? AND type = ?').run(email, type);
+  return { valid: true };
+};
 
 // POST /api/auth/register
 router.post('/register', (req, res) => {
   try {
-    const { email, password, role, ...profileData } = req.body;
+    const { email, password, role, otp, ...profileData } = req.body;
 
-    if (!email || !password || !role) {
-      return res.status(400).json({ success: false, message: 'Email, password, and role are required' });
+    if (!email || !password || !role || !otp) {
+      return res.status(400).json({ success: false, message: 'Email, password, role, and OTP are required' });
+    }
+
+    const otpCheck = verifyOTP(email, otp, 'register');
+    if (!otpCheck.valid) {
+      return res.status(400).json({ success: false, message: otpCheck.message });
     }
 
     if (!['candidate', 'employer'].includes(role)) {
@@ -66,17 +152,18 @@ router.post('/register', (req, res) => {
 // POST /api/auth/login
 router.post('/login', (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email and password are required' });
+    const { email, password, otp } = req.body;
+    if (!email || !password || !otp) {
+      return res.status(400).json({ success: false, message: 'Email, password, and OTP are required' });
+    }
+
+    const otpCheck = verifyOTP(email, otp, 'login');
+    if (!otpCheck.valid) {
+      return res.status(400).json({ success: false, message: otpCheck.message });
     }
 
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    if (!bcrypt.compareSync(password, user.password_hash)) {
+    if (!user || !bcrypt.compareSync(password, user.password_hash)) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 

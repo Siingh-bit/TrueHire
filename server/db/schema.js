@@ -173,6 +173,15 @@ export function initDB() {
       verification_token TEXT UNIQUE,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS otp_codes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      otp TEXT NOT NULL,
+      type TEXT CHECK(type IN ('login', 'register')) NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      expires_at DATETIME NOT NULL
+    );
   `);
 
   try { db.exec("ALTER TABLE jobs ADD COLUMN bounty_amount INTEGER DEFAULT 0"); } catch(e) {}

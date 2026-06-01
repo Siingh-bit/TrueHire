@@ -34,10 +34,18 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
-  const login = async (email, password) => {
+  const sendOtp = async (email, type, password) => {
+    try {
+      return await api.sendOtp(email, type, password);
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const login = async (email, password, otp) => {
     setError(null);
     try {
-      const response = await api.login(email, password);
+      const response = await api.login(email, password, otp);
       if (response.success) {
         setUser(response.data.user);
         setProfile(response.data.profile);
@@ -93,6 +101,7 @@ export function AuthProvider({ children }) {
     isAdmin: user?.role === 'admin',
     login,
     register,
+    sendOtp,
     logout,
     refreshProfile,
     setError,

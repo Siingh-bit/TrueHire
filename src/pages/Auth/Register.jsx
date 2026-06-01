@@ -7,9 +7,11 @@ export default function Register() {
   const [step, setStep] = useState(1);
   const [role, setRole] = useState('');
   const [formData, setFormData] = useState({ email: '', password: '', full_name: '', phone: '', headline: '', total_experience_years: '', company_name: '', industry: '', company_size: '', website: '' });
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { register } = useAuth();
+  const [message, setMessage] = useState('');
+  const { register, sendOtp } = useAuth();
   const navigate = useNavigate();
 
   const updateField = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
@@ -20,16 +22,36 @@ export default function Register() {
     setStep(step + 1);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     if (role === 'candidate' && Number(formData.total_experience_years) < 3) {
       setError('Minimum 3 years of experience required'); return;
     }
     setLoading(true);
     setError('');
+    setMessage('');
     try {
-      await register({ ...formData, role, total_experience_years: Number(formData.total_experience_years) });
-      setStep(3);
+      const res = await sendOtp(formData.email, 'register');
+      setStep(3); // Go to OTP step
+      if (res.devOtp) {
+        setMessage(`OTP sent! (Dev Mode: ${res.devOtp})`);
+      } else {
+        setMessage('OTP sent to your email! It expires in 10 minutes.');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to send OTP. Email may be already registered.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await register({ ...formData, role, otp, total_experience_years: Number(formData.total_experience_years) });
+      setStep(4); // Success step
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -45,8 +67,8 @@ export default function Register() {
       </div>
       <div className="auth-card auth-card--wide animate-fade-in-up">
         <div className="auth-steps">
-          {[1, 2, 3].map(s => (
-            <div key={s} className={`auth-step ${s === step ? 'auth-step--active' : ''} ${s < step ? 'auth-step--done' : ''}`} />
+          {[1, 2, 3, 4].map(s => (
+            <div key={s} className={`auth-step ${s === step ? 'auth-step--active' : ''} ${s < step ? 'auth-step--done' : ''}`} style={{ flex: 1 }} />
           ))}
         </div>
 
@@ -80,7 +102,7 @@ export default function Register() {
               <p className="auth-card__subtitle">Tell us about {role === 'candidate' ? 'yourself' : 'your company'}</p>
             </div>
             {error && <div className="auth-error">{error}</div>}
-            <form onSubmit={handleSubmit} className="auth-form">
+            <form onSubmit={handleSendOtp} className="auth-form">
               {role === 'candidate' ? (
                 <>
                   <div className="auth-field">
@@ -165,7 +187,7 @@ export default function Register() {
               <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                 <button type="button" className="auth-submit" style={{ background: 'rgba(255,255,255,0.05)', flex: '0 0 auto', width: 'auto', padding: '0 var(--space-6)' }} onClick={() => setStep(1)}>← Back</button>
                 <button type="submit" className="auth-submit" disabled={loading}>
-                  {loading ? <span className="spinner-sm" /> : 'Create Account'}
+                  {loading ? <span className="spinner-sm" /> : 'Send Verification Code'}
                 </button>
               </div>
             </form>
@@ -173,6 +195,31 @@ export default function Register() {
         )}
 
         {step === 3 && (
+          <>
+            <div className="auth-card__header">
+              <h1 className="auth-card__title">Verify Email</h1>
+              <p className="auth-card__subtitle">We've sent a 6-digit code to {formData.email}</p>
+            </div>
+            
+            {error && <div className="auth-error">{error}</div>}
+            {message && <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--color-success-400)', borderRadius: '8px', fontSize: '14px' }}>{message}</div>}
+
+            <form onSubmit={handleRegister} className="auth-form">
+              <div className="auth-field">
+                <label>6-Digit OTP</label>
+                <input type="text" value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter OTP" required maxLength={6} style={{ letterSpacing: '4px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button type="button" className="auth-submit" style={{ background: 'rgba(255,255,255,0.05)', flex: '0 0 auto', width: 'auto', padding: '0 20px' }} onClick={() => setStep(2)}>← Back</button>
+                <button type="submit" className="auth-submit" disabled={loading || otp.length < 6}>
+                  {loading ? <span className="spinner-sm" /> : 'Create Account'}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+
+        {step === 4 && (
           <div className="auth-success">
             <div className="auth-success__icon">🎉</div>
             <h2 className="auth-success__title">Welcome to TrueHire!</h2>
@@ -183,7 +230,7 @@ export default function Register() {
           </div>
         )}
 
-        {step !== 3 && (
+        {step !== 4 && (
           <div className="auth-footer">
             Already have an account? <Link to="/login">Sign in</Link>
           </div>
