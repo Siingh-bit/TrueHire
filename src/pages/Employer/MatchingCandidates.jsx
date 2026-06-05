@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
-import '../Employer/Dashboard.css';
 
 export default function MatchingCandidates() {
   const { jobId } = useParams();
