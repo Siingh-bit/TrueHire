@@ -68,6 +68,20 @@ export default function Agreement() {
               </div>
             </label>
           ))}
+          <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: 'var(--space-4) 0' }} />
+          <label style={{ display: 'flex', gap: 'var(--space-3)', cursor: 'pointer', alignItems: 'center' }}>
+            <input
+              type="checkbox"
+              checked={allChecked}
+              onChange={() => {
+                const newChecked = {};
+                agreement.clauses.forEach(c => newChecked[c.id] = !allChecked);
+                setChecked(newChecked);
+              }}
+              style={{ accentColor: 'var(--color-primary-500)', width: '18px', height: '18px', flexShrink: 0 }}
+            />
+            <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>Select All Terms</div>
+          </label>
         </div>
         <button className="auth-submit" disabled={!allChecked || loading} onClick={handleAccept}>
           {loading ? <span className="spinner-sm" /> : 'I Accept All Terms & Conditions'}
