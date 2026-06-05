@@ -71,12 +71,18 @@ export default function TakeAssessment() {
     };
   }, [status]);
 
+  const [stream, setStream] = useState(null);
+
   // Camera setup
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 200, height: 150 } });
-      streamRef.current = stream;
-      if (videoRef.current) videoRef.current.srcObject = stream;
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user', width: 200, height: 150 },
+        audio: true 
+      });
+      streamRef.current = mediaStream;
+      setStream(mediaStream);
+      // We will bind it in a useEffect because videoRef might not be mounted yet
     } catch (err) {
       console.warn('Camera not available:', err);
     }
@@ -86,8 +92,15 @@ export default function TakeAssessment() {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
+      setStream(null);
     }
   };
+
+  useEffect(() => {
+    if (videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [status, stream]);
 
   useEffect(() => { return () => stopCamera(); }, []);
 
