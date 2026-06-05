@@ -41,7 +41,13 @@ export default function Login() {
     setError('');
     try {
       const data = await login(email, password, otp);
-      navigate(data.user.role === 'candidate' ? '/candidate/dashboard' : '/employer/dashboard');
+      if (data.user.role === 'candidate') {
+        navigate('/candidate/dashboard');
+      } else if (data.user.role === 'admin' || data.user.role === 'super_admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/employer/dashboard');
+      }
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
@@ -51,6 +57,7 @@ export default function Login() {
 
   const fillDemo = (type) => {
     if (type === 'candidate') { setEmail('priya.sharma@email.com'); setPassword('password123'); }
+    else if (type === 'admin') { setEmail('admin@truehire.com'); setPassword('password123'); }
     else { setEmail('hr@technova.com'); setPassword('password123'); }
   };
 
@@ -107,6 +114,7 @@ export default function Login() {
             <div className="auth-demo__btns">
               <button onClick={() => fillDemo('candidate')} className="auth-demo__btn">👤 Candidate</button>
               <button onClick={() => fillDemo('employer')} className="auth-demo__btn">🏢 Employer</button>
+              <button onClick={() => fillDemo('admin')} className="auth-demo__btn">🛡️ Admin</button>
             </div>
           </div>
         )}

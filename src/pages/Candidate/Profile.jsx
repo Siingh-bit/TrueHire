@@ -112,8 +112,17 @@ export default function CandidateProfile() {
   };
 
   useEffect(() => {
-    if (candidate && activeTab === 'personal') {
-      setFormData({ full_name: candidate.full_name, phone: candidate.phone, headline: candidate.headline, summary: candidate.summary, current_location: candidate.current_location, expected_salary_min: candidate.expected_salary_min, expected_salary_max: candidate.expected_salary_max, is_open_to_work: candidate.is_open_to_work });
+    if (candidate) {
+      if (activeTab === 'personal') {
+        setFormData({ full_name: candidate.full_name, phone: candidate.phone, headline: candidate.headline, summary: candidate.summary, current_location: candidate.current_location, expected_salary_min: candidate.expected_salary_min, expected_salary_max: candidate.expected_salary_max, is_open_to_work: candidate.is_open_to_work });
+      } else if (activeTab === 'switch plan') {
+        setFormData({
+          current_company_join_date: candidate.current_company_join_date,
+          available_to_switch_from: candidate.available_to_switch_from,
+          notice_period_days: candidate.notice_period_days,
+          preferred_interview_days: candidate.preferred_interview_days ? JSON.parse(candidate.preferred_interview_days) : []
+        });
+      }
     }
   }, [candidate, activeTab]);
 
@@ -131,8 +140,8 @@ export default function CandidateProfile() {
       {message && <div style={{ padding: 'var(--space-3) var(--space-4)', background: message.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(0,217,148,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', color: message.startsWith('Error') ? 'var(--color-danger-400)' : 'var(--color-accent-400)', fontSize: 'var(--font-size-sm)' }}>{message}</div>}
 
       <div className="tabs">
-        {['personal', 'education', 'experience', 'skills'].map(t => (
-          <button key={t} className={`tab ${activeTab === t ? 'tab--active' : ''}`} onClick={() => setActiveTab(t)}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
+        {['personal', 'switch plan', 'education', 'experience', 'skills'].map(t => (
+          <button key={t} className={`tab ${activeTab === t ? 'tab--active' : ''}`} onClick={() => setActiveTab(t)}>{t.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</button>
         ))}
       </div>
 
@@ -159,6 +168,40 @@ export default function CandidateProfile() {
               <div className="auth-field"><label>Expected Salary Max (₹/year)</label><input type="number" value={formData.expected_salary_max || ''} onChange={e => setFormData({...formData, expected_salary_max: e.target.value})} /></div>
             </div>
             <button type="submit" className="btn btn--primary" disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</button>
+          </form>
+        </div>
+      )}
+
+      {activeTab === 'switch plan' && (
+        <div className="card" style={{ padding: 'var(--space-8)' }}>
+          <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'rgba(45,121,242,0.1)', borderRadius: 'var(--radius-md)' }}>
+            <h3 style={{ marginBottom: 'var(--space-2)', color: 'var(--color-primary-400)' }}>Seamless Job Switch Planning</h3>
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>Configure your availability to help TrueHire schedule your Level 1 & Level 2 interviews smoothly around your current job, and set your expected joining date for potential employers.</p>
+          </div>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setSaving(true);
+            try {
+              await api.updateSwitchPlan({
+                current_company_join_date: formData.current_company_join_date,
+                available_to_switch_from: formData.available_to_switch_from,
+                notice_period_days: formData.notice_period_days,
+                preferred_interview_days: formData.preferred_interview_days ? formData.preferred_interview_days.split(',').map(s=>s.trim()) : [],
+              });
+              setMessage('Switch plan updated successfully!');
+              setTimeout(() => setMessage(''), 3000);
+            } catch (err) { setMessage('Error: ' + err.message); }
+            setSaving(false);
+          }} className="auth-form">
+            <div className="auth-row">
+              <div className="auth-field"><label>Current Company Join Date</label><input type="date" value={formData.current_company_join_date || ''} onChange={e => setFormData({...formData, current_company_join_date: e.target.value})} /></div>
+              <div className="auth-field"><label>Notice Period (Days)</label><input type="number" value={formData.notice_period_days || 0} onChange={e => setFormData({...formData, notice_period_days: e.target.value})} /></div>
+            </div>
+            <div className="auth-row">
+              <div className="auth-field"><label>Expected Availability to Join Date</label><input type="date" value={formData.available_to_switch_from || ''} onChange={e => setFormData({...formData, available_to_switch_from: e.target.value})} /></div>
+              <div className="auth-field"><label>Preferred Interview Days</label><input type="text" placeholder="e.g. Sat, Sun" value={formData.preferred_interview_days ? (Array.isArray(formData.preferred_interview_days) ? formData.preferred_interview_days.join(', ') : formData.preferred_interview_days) : ''} onChange={e => setFormData({...formData, preferred_interview_days: e.target.value})} /></div>
+            </div>
+            <button type="submit" className="btn btn--primary" disabled={saving}>{saving ? 'Saving...' : 'Save Switch Plan'}</button>
           </form>
         </div>
       )}

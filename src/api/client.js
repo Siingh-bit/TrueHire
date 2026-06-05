@@ -292,6 +292,52 @@ class ApiClient {
       body: data,
     });
   }
+
+  // Agreement
+  async getAgreement() { return this.request('/agreement'); }
+  async acceptAgreement() { return this.request('/agreement/accept', { method: 'POST' }); }
+
+  // Switch Plan
+  async updateSwitchPlan(data) { return this.request('/candidates/switch-plan', { method: 'PUT', body: data }); }
+
+  // Availability
+  async getAvailability() { return this.request('/candidates/availability'); }
+  async addAvailability(data) { return this.request('/candidates/availability', { method: 'POST', body: data }); }
+  async deleteAvailability(id) { return this.request(`/candidates/availability/${id}`, { method: 'DELETE' }); }
+
+  // Pipeline
+  async getCandidatePipeline() { return this.request('/pipeline/candidate'); }
+  async getJobPipeline(jobId) { return this.request(`/pipeline/job/${jobId}`); }
+  async getAllPipelines() { return this.request('/pipeline/all'); }
+  async createPipeline(applicationId) { return this.request(`/pipeline/create/${applicationId}`, { method: 'POST' }); }
+  async updateLevel1(id, data) { return this.request(`/pipeline/${id}/level1`, { method: 'PUT', body: data }); }
+  async updateLevel2(id, data) { return this.request(`/pipeline/${id}/level2`, { method: 'PUT', body: data }); }
+  async sendToEmployer(id) { return this.request(`/pipeline/${id}/send-to-employer`, { method: 'PUT' }); }
+  async updateEmployerStatus(id, data) { return this.request(`/pipeline/${id}/employer-status`, { method: 'PUT', body: data }); }
+
+  // Admin
+  async getAdminDashboard() { return this.request('/admin/dashboard'); }
+  async getAdminCandidates(filters = {}) {
+    const params = new URLSearchParams(Object.entries(filters).filter(([,v]) => v)).toString();
+    return this.request(`/admin/candidates${params ? '?' + params : ''}`);
+  }
+  async getAdminCandidate(id) { return this.request(`/admin/candidates/${id}`); }
+  async updateAccountStatus(id, status, reason) { return this.request(`/admin/candidates/${id}/account-status`, { method: 'PUT', body: { status, reason } }); }
+  async updatePenalty(id, penalty_status, reason) { return this.request(`/admin/candidates/${id}/penalty`, { method: 'PUT', body: { penalty_status, reason } }); }
+  async addAdminNote(id, notes) { return this.request(`/admin/candidates/${id}/notes`, { method: 'POST', body: { notes } }); }
+  async updateCheatingFlag(id, flag, notes) { return this.request(`/admin/candidates/${id}/cheating-flag`, { method: 'PUT', body: { flag, notes } }); }
+  async getMatchingCandidates(jobId) { return this.request(`/jobs/matching-candidates/${jobId}`); }
+  async createAdmin(email, password) { return this.request('/admin/admins', { method: 'POST', body: { email, password } }); }
+  async getAdmins() { return this.request('/admin/admins'); }
+
+  // Analytics
+  async trackAnalytics(event_type, path) {
+    // Fire and forget (no need to await or handle errors heavily on the client side)
+    return this.request('/analytics/track', {
+      method: 'POST',
+      body: { event_type, path }
+    }).catch(() => {});
+  }
 }
 
 const api = new ApiClient();

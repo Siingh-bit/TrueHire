@@ -81,6 +81,12 @@ export default function Navbar() {
               <Link to="/employer/post-job" className="navbar__link" onClick={() => setMenuOpen(false)}>Post Job</Link>
               <Link to="/employer/jobs" className="navbar__link" onClick={() => setMenuOpen(false)}>Manage Jobs</Link>
             </>
+          ) : user?.role === 'admin' ? (
+            <>
+              <Link to="/admin/dashboard" className="navbar__link" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              <Link to="/admin/candidates" className="navbar__link" onClick={() => setMenuOpen(false)}>Candidates</Link>
+              <Link to="/admin/pipeline" className="navbar__link" onClick={() => setMenuOpen(false)}>Pipeline</Link>
+            </>
           ) : null}
 
           {isAuthenticated && (

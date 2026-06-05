@@ -63,6 +63,59 @@ router.get('/', optionalAuth, (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to get jobs' });
   }
 });
+// GET /api/jobs/matching-candidates/:jobId
+router.get('/matching-candidates/:jobId', authMiddleware, (req, res) => {
+  try {
+    const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(req.params.jobId);
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
+
+    const requiredSkills = JSON.parse(job.required_skills || '[]');
+    
+    // Get all open candidates with their skills
+    const candidates = db.prepare(`
+      SELECT cp.*, u.email,
+        GROUP_CONCAT(DISTINCT s.skill_name) as skill_list
+      FROM candidate_profiles cp
+      JOIN users u ON cp.user_id = u.id
+      LEFT JOIN skills s ON s.candidate_id = cp.id
+      WHERE cp.is_open_to_work = 1
+        AND cp.account_status = 'active'
+        AND cp.total_experience_years >= ?
+        AND (cp.total_experience_years <= ? OR ? IS NULL)
+      GROUP BY cp.id
+    `).all(job.min_experience_years || 0, job.max_experience_years || 99, job.max_experience_years);
+
+    // Score each candidate
+    const scored = candidates.map(c => {
+      const candidateSkills = (c.skill_list || '').split(',').map(s => s.trim().toLowerCase());
+      const skillOverlap = requiredSkills.filter(rs => candidateSkills.includes(rs.toLowerCase())).length;
+      const skillScore = requiredSkills.length > 0 ? (skillOverlap / requiredSkills.length) * 50 : 25;
+
+      let dateScore = 25; // default if no dates
+      if (job.expected_joining_date && c.available_to_switch_from) {
+        const jobDate = new Date(job.expected_joining_date);
+        const candDate = new Date(c.available_to_switch_from);
+        const diffDays = Math.abs((jobDate - candDate) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 30) dateScore = 50;
+        else if (diffDays <= 60) dateScore = 40;
+        else if (diffDays <= 90) dateScore = 30;
+        else if (diffDays <= 180) dateScore = 15;
+        else dateScore = 5;
+      }
+
+      const verificationBonus = c.verification_status === 'verified' ? 10 : 0;
+      const matchScore = Math.min(100, Math.round(skillScore + dateScore + verificationBonus));
+
+      return { ...c, matchScore, skillOverlap, totalRequiredSkills: requiredSkills.length };
+    });
+
+    scored.sort((a, b) => b.matchScore - a.matchScore);
+    res.json({ success: true, data: scored });
+  } catch (err) {
+    console.error('Matching candidates error:', err);
+    res.status(500).json({ success: false, message: 'Failed to get matching candidates' });
+  }
+});
 
 // GET /api/jobs/:id
 router.get('/:id', optionalAuth, (req, res) => {
@@ -100,20 +153,20 @@ router.post('/', authMiddleware, (req, res) => {
     const profile = db.prepare('SELECT id FROM employer_profiles WHERE user_id = ?').get(req.user.id);
     if (!profile) return res.status(404).json({ success: false, message: 'Employer profile not found' });
 
-    const { title, description, required_skills, preferred_skills, min_experience_years = 3, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment = true, assessment_config, application_deadline } = req.body;
+    const { title, description, required_skills, preferred_skills, min_experience_years = 3, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment = true, assessment_config, application_deadline, expected_joining_date } = req.body;
 
     if (!title || !description || !required_skills) {
       return res.status(400).json({ success: false, message: 'Title, description, and required skills are required' });
     }
 
-    const result = db.prepare(`INSERT INTO jobs (employer_id, title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment, assessment_config, application_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    const result = db.prepare(`INSERT INTO jobs (employer_id, title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment, assessment_config, application_deadline, expected_joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       profile.id, title, description,
       JSON.stringify(required_skills),
       JSON.stringify(preferred_skills || []),
       min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount || 0, location, job_type,
       requires_assessment ? 1 : 0,
       assessment_config ? JSON.stringify(assessment_config) : null,
-      application_deadline
+      application_deadline, expected_joining_date || null
     );
 
     const job = db.prepare('SELECT * FROM jobs WHERE id = ?').get(result.lastInsertRowid);

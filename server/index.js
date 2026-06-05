@@ -13,6 +13,10 @@ import jobRoutes from './routes/jobs.js';
 import applicationRoutes from './routes/applications.js';
 import assessmentRoutes from './routes/assessments.js';
 import feedbackRoutes from './routes/feedback.js';
+import agreementRoutes from './routes/agreement.js';
+import pipelineRoutes from './routes/pipeline.js';
+import adminRoutes from './routes/admin.js';
+import analyticsRoutes from './routes/analytics.js';
 
 let __dirname = '';
 try {
@@ -44,6 +48,10 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/agreement', agreementRoutes);
+app.use('/api/pipeline', pipelineRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

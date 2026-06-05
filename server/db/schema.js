@@ -182,12 +182,87 @@ export function initDB() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       expires_at DATETIME NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS interview_pipeline (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      application_id INTEGER REFERENCES applications(id),
+      candidate_id INTEGER REFERENCES candidate_profiles(id),
+      job_id INTEGER REFERENCES jobs(id),
+      level1_status TEXT DEFAULT 'pending',
+      level1_scheduled_at DATETIME,
+      level1_completed_at DATETIME,
+      level1_notes TEXT,
+      level2_status TEXT DEFAULT 'pending',
+      level2_scheduled_at DATETIME,
+      level2_completed_at DATETIME,
+      level2_notes TEXT,
+      sent_to_employer INTEGER DEFAULT 0,
+      sent_to_employer_at DATETIME,
+      employer_status TEXT DEFAULT 'pending',
+      employer_notes TEXT,
+      cheating_flag INTEGER DEFAULT 0,
+      cheating_notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS candidate_agreements (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER REFERENCES users(id),
+      candidate_id INTEGER REFERENCES candidate_profiles(id),
+      agreement_version TEXT NOT NULL,
+      agreement_text_hash TEXT,
+      accepted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      ip_address TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS admin_actions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      admin_id INTEGER REFERENCES users(id),
+      candidate_id INTEGER REFERENCES candidate_profiles(id),
+      action_type TEXT NOT NULL,
+      reason TEXT,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS candidate_availability (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      candidate_id INTEGER REFERENCES candidate_profiles(id),
+      available_date TEXT NOT NULL,
+      time_slot TEXT NOT NULL,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS platform_analytics (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_type TEXT CHECK(event_type IN ('page_view', 'app_download')) NOT NULL,
+      path TEXT,
+      user_agent TEXT,
+      ip_address TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   try { db.exec("ALTER TABLE jobs ADD COLUMN bounty_amount INTEGER DEFAULT 0"); } catch(e) {}
   try { db.exec("ALTER TABLE applications ADD COLUMN rejection_reason TEXT"); } catch(e) {}
   try { db.exec("ALTER TABLE applications ADD COLUMN video_cover_letter_url TEXT"); } catch(e) {}
   try { db.exec("ALTER TABLE applications ADD COLUMN referrer_id INTEGER REFERENCES users(id)"); } catch(e) {}
+
+  // Phase 1: Job-switch platform migrations
+  try { db.exec("ALTER TABLE users ADD COLUMN is_super_admin INTEGER DEFAULT 0"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN current_company_join_date TEXT"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN available_to_switch_from TEXT"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN notice_period_days INTEGER DEFAULT 30"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN preferred_interview_slots TEXT DEFAULT '[]'"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN preferred_interview_days TEXT DEFAULT '[]'"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_accepted INTEGER DEFAULT 0"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_accepted_at DATETIME"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_version TEXT"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_ip TEXT"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN account_status TEXT DEFAULT 'active'"); } catch(e) {}
+  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN penalty_status TEXT DEFAULT 'none'"); } catch(e) {}
+  try { db.exec("ALTER TABLE jobs ADD COLUMN expected_joining_date TEXT"); } catch(e) {}
 
   console.log('✅ Database tables initialized');
 }

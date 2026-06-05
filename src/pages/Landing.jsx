@@ -53,6 +53,14 @@ export default function Landing() {
                 <Link to="/login" className="hero__btn hero__btn--secondary">
                   Sign In
                 </Link>
+                <button 
+                  onClick={() => {
+                    import('../api/client').then(({ default: api }) => api.trackAnalytics('app_download', '/download'));
+                    alert('Thanks for downloading the TrueHire app!');
+                  }}
+                  className="hero__btn hero__btn--secondary" style={{ borderColor: '#10b981', color: '#10b981' }}>
+                  📱 Download App
+                </button>
               </>
             ) : (
               <Link to={isCandidate ? '/candidate/dashboard' : '/employer/dashboard'} className="hero__btn hero__btn--primary">

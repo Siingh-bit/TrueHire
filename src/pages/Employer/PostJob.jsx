@@ -7,7 +7,7 @@ const COMMON_SKILLS = ['JavaScript','Python','Java','React','Node.js','SQL','AWS
 
 export default function PostJob() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ title: '', description: '', required_skills: [], preferred_skills: [], min_experience_years: 3, max_experience_years: 10, salary_min: '', salary_max: '', bounty_amount: '', location: '', job_type: 'full-time', requires_assessment: true, assessment_config: { difficulty: 'medium', duration: 45 }, application_deadline: '' });
+  const [formData, setFormData] = useState({ title: '', description: '', required_skills: [], preferred_skills: [], min_experience_years: 3, max_experience_years: 10, salary_min: '', salary_max: '', bounty_amount: '', location: '', job_type: 'full-time', requires_assessment: true, assessment_config: { difficulty: 'medium', duration: 45 }, application_deadline: '', expected_joining_date: '' });
   const [skillInput, setSkillInput] = useState('');
   const [prefSkillInput, setPrefSkillInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -120,7 +120,10 @@ export default function PostJob() {
             )}
           </div>
 
-          <div className="auth-field"><label>Application Deadline</label><input type="date" value={formData.application_deadline} onChange={e => update('application_deadline', e.target.value)} /></div>
+          <div className="auth-row">
+            <div className="auth-field"><label>Application Deadline</label><input type="date" value={formData.application_deadline} onChange={e => update('application_deadline', e.target.value)} /></div>
+            <div className="auth-field"><label>Expected Joining Date</label><input type="date" value={formData.expected_joining_date} onChange={e => update('expected_joining_date', e.target.value)} placeholder="Ideal date for candidate to join" /></div>
+          </div>
 
           <button type="submit" className="btn btn--primary btn--lg" disabled={loading}>{loading ? 'Posting...' : 'Post Job →'}</button>
         </form>

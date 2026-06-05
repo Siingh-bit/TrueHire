@@ -58,8 +58,9 @@ export default function CandidateDashboard() {
         </div>
       </div>
 
-      <div className="quick-actions">
+      <div className="quick-actions" style={{ flexWrap: 'wrap' }}>
         <Link to="/candidate/jobs" className="btn btn--primary">🔍 Search Jobs</Link>
+        <Link to="/candidate/availability" className="btn btn--secondary" style={{ background: 'rgba(45,121,242,0.15)', borderColor: 'rgba(45,121,242,0.3)', color: 'var(--color-primary-400)' }}>📅 Interview Availability</Link>
         <Link to="/candidate/profile" className="btn btn--secondary">✏️ Edit Profile</Link>
         <Link to="/candidate/applications" className="btn btn--secondary">📋 My Applications</Link>
         <Link to="/candidate/feedback/request" className="btn btn--secondary">💬 Request Feedback</Link>

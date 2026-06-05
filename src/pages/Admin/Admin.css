@@ -1,0 +1,35 @@
+.admin { padding: var(--space-8) var(--space-6); max-width: 1200px; margin: 0 auto; }
+.admin__header { margin-bottom: var(--space-6); }
+.admin__title { font-family: var(--font-family-display); font-size: 1.8rem; color: var(--color-text-primary); margin-bottom: var(--space-2); }
+.admin__subtitle { color: var(--color-text-secondary); font-size: 0.95rem; }
+.admin__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+.admin__stat-card { background: var(--color-bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: var(--space-4); text-align: center; }
+.admin__stat-value { font-size: 1.8rem; font-weight: 700; color: var(--color-primary-400); }
+.admin__stat-label { color: var(--color-text-secondary); font-size: 0.85rem; margin-top: 4px; }
+.admin__card { background: var(--color-bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: var(--space-5); margin-bottom: var(--space-4); }
+.admin__card-title { color: var(--color-text-primary); font-size: 1.1rem; font-weight: 600; margin-bottom: var(--space-4); }
+.admin__table { width: 100%; border-collapse: collapse; }
+.admin__table th { text-align: left; padding: 10px 12px; color: var(--color-text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.admin__table td { padding: 12px; color: var(--color-text-primary); border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.9rem; }
+.admin__table tr:hover { background: rgba(255,255,255,0.02); }
+.admin__badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.admin__badge--active { background: rgba(34,197,94,0.15); color: #22c55e; }
+.admin__badge--warned { background: rgba(234,179,8,0.15); color: #eab308; }
+.admin__badge--banned { background: rgba(239,68,68,0.15); color: #ef4444; }
+.admin__badge--pending { background: rgba(139,45,255,0.15); color: #a78bfa; }
+.admin__badge--cleared { background: rgba(0,217,148,0.15); color: #00d994; }
+.admin__badge--rejected { background: rgba(239,68,68,0.15); color: #ef4444; }
+.admin__badge--scheduled { background: rgba(45,121,242,0.15); color: #60a5fa; }
+.admin__filters { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.admin__filter-input { padding: 8px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--color-text-primary); font-size: 0.9rem; min-width: 160px; }
+.admin__filter-input::placeholder { color: var(--color-text-tertiary); }
+.admin__btn { padding: 6px 14px; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: var(--transition-fast); }
+.admin__btn--primary { background: var(--color-primary-500); color: #fff; }
+.admin__btn--danger { background: rgba(239,68,68,0.15); color: #ef4444; }
+.admin__btn--warning { background: rgba(234,179,8,0.15); color: #eab308; }
+.admin__btn--success { background: rgba(34,197,94,0.15); color: #22c55e; }
+.admin__btn:hover { opacity: 0.85; }
+.admin__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.admin__modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.admin__modal { background: var(--color-bg-secondary); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: var(--space-6); max-width: 500px; width: 90%; }
+.admin__modal-title { color: var(--color-text-primary); font-size: 1.2rem; font-weight: 600; margin-bottom: var(--space-4); }
