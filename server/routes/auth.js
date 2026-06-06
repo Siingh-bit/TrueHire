@@ -3,6 +3,13 @@ import bcrypt from 'bcryptjs';
 import db from '../db/schema.js';
 import { generateToken, authMiddleware } from '../middleware/auth.js';
 import nodemailer from 'nodemailer';
+import rateLimit from 'express-rate-limit';
+
+const authLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: { success: false, message: 'Too many requests, please try again after 10 minutes' }
+});
 
 const router = Router();
 
@@ -19,7 +26,7 @@ const transporter = nodemailer.createTransport({
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // POST /api/auth/send-otp
-router.post('/send-otp', async (req, res) => {
+router.post('/send-otp', authLimiter, async (req, res) => {
   try {
     const { email, type, password } = req.body;
     
@@ -150,7 +157,7 @@ router.post('/register', (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', authLimiter, (req, res) => {
   try {
     const { email, password, otp } = req.body;
     if (!email || !password || !otp) {

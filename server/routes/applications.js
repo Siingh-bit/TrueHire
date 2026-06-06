@@ -130,9 +130,13 @@ router.post('/', authMiddleware, (req, res) => {
   }
 });
 
-// PUT /api/applications/:id/status - Update application status (employer)
+// PUT /api/applications/:id/status - Update application status (employer/admin)
 router.put('/:id/status', authMiddleware, (req, res) => {
   try {
+    if (req.user.role === 'candidate') {
+      return res.status(403).json({ success: false, message: 'Candidates cannot update application statuses' });
+    }
+
     const { status, rejection_reason } = req.body;
     const application = db.prepare('SELECT a.*, j.employer_id FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.id = ?').get(req.params.id);
     if (!application) return res.status(404).json({ success: false, message: 'Application not found' });

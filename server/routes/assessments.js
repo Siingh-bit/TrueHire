@@ -108,6 +108,15 @@ router.get('/:id', authMiddleware, (req, res) => {
     const assessment = db.prepare('SELECT * FROM assessments WHERE id = ?').get(req.params.id);
     if (!assessment) return res.status(404).json({ success: false, message: 'Assessment not found' });
 
+    if (req.user.role === 'candidate') {
+      const profile = db.prepare('SELECT id FROM candidate_profiles WHERE user_id = ?').get(req.user.id);
+      if (!profile || assessment.candidate_id !== profile.id) return res.status(403).json({ success: false, message: 'Access denied' });
+    } else if (req.user.role === 'employer') {
+      const profile = db.prepare('SELECT id FROM employer_profiles WHERE user_id = ?').get(req.user.id);
+      const job = db.prepare('SELECT id FROM jobs WHERE id = ? AND employer_id = ?').get(assessment.job_id, profile.id);
+      if (!job) return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
     assessment.questions = JSON.parse(assessment.questions);
     assessment.answers = assessment.answers ? JSON.parse(assessment.answers) : null;
     assessment.proctoring_violations = assessment.proctoring_violations ? JSON.parse(assessment.proctoring_violations) : [];
@@ -165,6 +174,10 @@ router.put('/:id/start', authMiddleware, (req, res) => {
     const assessment = db.prepare('SELECT * FROM assessments WHERE id = ?').get(req.params.id);
     if (!assessment) return res.status(404).json({ success: false, message: 'Assessment not found' });
 
+    if (req.user.role !== 'candidate') return res.status(403).json({ success: false, message: 'Only candidates can start assessments' });
+    const profile = db.prepare('SELECT id FROM candidate_profiles WHERE user_id = ?').get(req.user.id);
+    if (!profile || assessment.candidate_id !== profile.id) return res.status(403).json({ success: false, message: 'Not your assessment' });
+
     if (assessment.status !== 'pending') {
       return res.status(400).json({ success: false, message: 'Assessment already started or completed' });
     }
@@ -188,6 +201,10 @@ router.put('/:id/submit', authMiddleware, (req, res) => {
   try {
     const assessment = db.prepare('SELECT * FROM assessments WHERE id = ?').get(req.params.id);
     if (!assessment) return res.status(404).json({ success: false, message: 'Assessment not found' });
+
+    if (req.user.role !== 'candidate') return res.status(403).json({ success: false, message: 'Only candidates can submit assessments' });
+    const profile = db.prepare('SELECT id FROM candidate_profiles WHERE user_id = ?').get(req.user.id);
+    if (!profile || assessment.candidate_id !== profile.id) return res.status(403).json({ success: false, message: 'Not your assessment' });
 
     const { answers } = req.body;
     const questions = JSON.parse(assessment.questions);
@@ -243,6 +260,10 @@ router.put('/:id/violation', authMiddleware, (req, res) => {
   try {
     const assessment = db.prepare('SELECT * FROM assessments WHERE id = ?').get(req.params.id);
     if (!assessment) return res.status(404).json({ success: false, message: 'Assessment not found' });
+
+    if (req.user.role !== 'candidate') return res.status(403).json({ success: false, message: 'Only candidates can log violations' });
+    const profile = db.prepare('SELECT id FROM candidate_profiles WHERE user_id = ?').get(req.user.id);
+    if (!profile || assessment.candidate_id !== profile.id) return res.status(403).json({ success: false, message: 'Not your assessment' });
 
     const violations = JSON.parse(assessment.proctoring_violations || '[]');
     violations.push({ ...req.body, timestamp: new Date().toISOString() });
