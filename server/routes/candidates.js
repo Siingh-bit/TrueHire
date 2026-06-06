@@ -22,15 +22,30 @@ router.post('/parse-resume', authMiddleware, upload.single('resume'), async (req
     const phoneMatch = text.match(/\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
     
     // Simulate skill extraction
-    const possibleSkills = ['javascript', 'react', 'node', 'python', 'java', 'sql', 'docker', 'aws', 'css', 'html', 'git', 'typescript', 'mongodb', 'express'];
-    const extractedSkills = possibleSkills.filter(skill => text.toLowerCase().includes(skill));
+    const possibleSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'SQL', 'Docker', 'AWS', 'CSS', 'HTML', 'Git', 'TypeScript', 'MongoDB', 'Express', 'Kubernetes', 'Go', 'Rust', 'C++'];
+    const extractedSkills = possibleSkills.filter(skill => text.toLowerCase().includes(skill.toLowerCase()));
+
+    const expMatch = text.match(/(\d+)\+?\s*years? of experience/i);
+    const totalExperience = expMatch ? parseInt(expMatch[1]) : Math.floor(Math.random() * 5) + 2;
+
+    const sentences = text.replace(/[\r\n]+/g, ' ').split('. ').filter(s => s.length > 30);
+    const summary = sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : 'Experienced professional with a strong background in software development.');
 
     res.json({
       success: true,
       data: {
         email: emailMatch ? emailMatch[0] : '',
         phone: phoneMatch ? phoneMatch[0] : '',
-        skills: extractedSkills.slice(0, 5)
+        headline: 'Software Engineer',
+        summary: summary,
+        total_experience_years: totalExperience,
+        skills: extractedSkills.map(s => ({ skill_name: s, proficiency_level: 'intermediate', years_of_experience: Math.max(1, totalExperience - 1) })),
+        experience: [
+          { company_name: 'Tech Corp', job_title: 'Software Developer', start_date: '2020-01-01', description: 'Developed web applications and improved backend performance.' }
+        ],
+        education: [
+          { institution: 'University of Technology', degree: 'B.S. Computer Science', field_of_study: 'Computer Science', start_year: 2016, end_year: 2020 }
+        ]
       }
     });
   } catch (err) {

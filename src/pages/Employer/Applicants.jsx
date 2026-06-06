@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/client';
+import MessagePanel from '../../components/Chat/MessagePanel';
 import '../../styles/dashboard.css';
 
 const STATUS_COLORS = { applied: 'primary', screening: 'secondary', assessment_pending: 'warning', assessment_completed: 'accent', shortlisted: 'success', interview: 'secondary', offered: 'success', hired: 'accent', rejected: 'danger' };
@@ -13,6 +14,7 @@ export default function Applicants() {
   const [expanded, setExpanded] = useState(null);
   const [rejectingApp, setRejectingApp] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [activeChat, setActiveChat] = useState(null);
 
   const REJECTION_REASONS = [
     'Requires more experience',
@@ -107,6 +109,7 @@ export default function Applicants() {
                 <button className="btn btn--secondary btn--sm" onClick={() => setExpanded(expanded === app.id ? null : app.id)}>
                   {expanded === app.id ? 'Hide Details' : 'View Details'} ↓
                 </button>
+                <button className="btn btn--primary btn--sm" onClick={() => setActiveChat(app.id)}>💬 Message</button>
                 <button className="btn btn--primary btn--sm" onClick={() => updateStatus(app.id, 'shortlisted')}>Shortlist</button>
                 <button className="btn btn--danger btn--sm" onClick={() => updateStatus(app.id, 'rejected')}>Reject</button>
               </div>
@@ -172,6 +175,9 @@ export default function Applicants() {
           </div>
         </div>
       )}
+
+      {/* Message Panel */}
+      {activeChat && <MessagePanel applicationId={activeChat} onClose={() => setActiveChat(null)} />}
     </div>
   );
 }

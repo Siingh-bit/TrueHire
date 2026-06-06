@@ -264,6 +264,16 @@ export function initDB() {
       feedback_notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      application_id INTEGER REFERENCES applications(id),
+      sender_id INTEGER REFERENCES users(id),
+      receiver_id INTEGER REFERENCES users(id),
+      content TEXT NOT NULL,
+      is_read INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   try { db.exec("ALTER TABLE jobs ADD COLUMN bounty_amount INTEGER DEFAULT 0"); } catch(e) {}

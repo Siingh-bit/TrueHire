@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
+import MessagePanel from '../../components/Chat/MessagePanel';
 import '../../styles/dashboard.css';
 
 const STATUS_COLORS = { applied: 'primary', screening: 'secondary', assessment_pending: 'warning', assessment_completed: 'accent', shortlisted: 'success', interview: 'secondary', offered: 'success', hired: 'accent', rejected: 'danger' };
@@ -10,6 +11,7 @@ export default function Applications() {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [activeChat, setActiveChat] = useState(null);
 
   useEffect(() => {
     api.getMyApplications().then(res => setApps(res.data || [])).finally(() => setLoading(false));
@@ -81,10 +83,17 @@ export default function Applications() {
                   <span style={{ fontSize: 'var(--font-size-sm)' }}>{app.rejection_reason}</span>
                 </div>
               )}
+              
+              <div style={{ marginTop: 'var(--space-3)', borderTop: '1px solid var(--color-border-primary)', paddingTop: 'var(--space-3)' }}>
+                <button className="btn btn--secondary btn--sm" onClick={() => setActiveChat(app.id)}>💬 Message Employer</button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Message Panel */}
+      {activeChat && <MessagePanel applicationId={activeChat} onClose={() => setActiveChat(null)} />}
     </div>
   );
 }

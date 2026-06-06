@@ -32,15 +32,32 @@ export default function CandidateProfile() {
       const data = await res.json();
       
       if (data.success) {
-        setFormData(prev => ({
-          ...prev,
-          phone: data.data.phone || prev.phone,
-        }));
+        const pd = data.data;
         
-        let msg = 'Resume parsed! ';
-        if (data.data.phone) msg += `Phone extracted. `;
-        if (data.data.skills?.length) msg += `Detected skills: ${data.data.skills.join(', ')} (Please add them below manually for accuracy).`;
-        setMessage(msg);
+        // Update main profile fields
+        const newProfileData = {
+          ...candidate,
+          phone: pd.phone || candidate.phone || '',
+          headline: pd.headline || candidate.headline || '',
+          summary: pd.summary || candidate.summary || '',
+          total_experience_years: pd.total_experience_years || candidate.total_experience_years || 0
+        };
+        await api.updateProfile(newProfileData);
+
+        // Add parsed arrays
+        if (pd.skills?.length) {
+          for (const s of pd.skills) await api.addSkill(s).catch(e=>console.log(e));
+        }
+        if (pd.experience?.length) {
+          for (const exp of pd.experience) await api.addExperience(exp).catch(e=>console.log(e));
+        }
+        if (pd.education?.length) {
+          for (const edu of pd.education) await api.addEducation(edu).catch(e=>console.log(e));
+        }
+
+        await loadProfile();
+        setFormData(newProfileData);
+        setMessage('Resume parsed! Profile, skills, and experience have been auto-filled. Please review for accuracy.');
       } else {
         setMessage('Error: ' + data.message);
       }

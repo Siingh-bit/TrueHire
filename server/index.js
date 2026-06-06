@@ -19,6 +19,7 @@ import adminRoutes from './routes/admin.js';
 import analyticsRoutes from './routes/analytics.js';
 import certificationRoutes from './routes/certifications.js';
 import interviewRoutes from './routes/interviews.js';
+import messageRoutes from './routes/messages.js';
 
 let __dirname = '';
 try {
@@ -56,6 +57,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/certifications', certificationRoutes);
 app.use('/api/interviews', interviewRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

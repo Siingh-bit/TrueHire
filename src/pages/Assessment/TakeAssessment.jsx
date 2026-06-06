@@ -99,6 +99,7 @@ export default function TakeAssessment() {
   useEffect(() => {
     if (videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(e => console.warn('Video play failed:', e));
     }
   }, [status, stream]);
 
