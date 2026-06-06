@@ -61,7 +61,8 @@ router.get('/job/:jobId', authMiddleware, (req, res) => {
       const skills = db.prepare('SELECT * FROM skills WHERE candidate_id = ?').all(a.candidate_id);
       const assessment = db.prepare('SELECT * FROM assessments WHERE application_id = ?').get(a.id);
       const feedbackCount = db.prepare('SELECT COUNT(*) as count FROM manager_feedback WHERE candidate_id = ? AND is_verified = 1').get(a.candidate_id).count;
-      return { ...a, skills, assessment, feedback_count: feedbackCount };
+      const truehire_interviews = db.prepare('SELECT * FROM truehire_interviews WHERE candidate_id = ? AND job_id = ?').all(a.candidate_id, a.job_id);
+      return { ...a, skills, assessment, feedback_count: feedbackCount, truehire_interviews };
     });
 
     res.json({ success: true, data: withDetails });
@@ -118,9 +119,24 @@ router.post('/', authMiddleware, (req, res) => {
       return res.status(400).json({ success: false, message: `Minimum ${job.min_experience_years} years experience required` });
     }
 
-    const initialStatus = job.requires_assessment ? 'assessment_pending' : 'applied';
+    let initialStatus = job.requires_assessment ? 'assessment_pending' : 'applied';
+    let assessmentScore = null;
 
-    const result = db.prepare('INSERT INTO applications (job_id, candidate_id, status, cover_letter, video_cover_letter_url, referrer_id) VALUES (?, ?, ?, ?, ?, ?)').run(job_id, profile.id, initialStatus, cover_letter, video_cover_letter_url, referrer_id || null);
+    if (job.requires_assessment) {
+      const requiredSkills = JSON.parse(job.required_skills || '[]');
+      if (requiredSkills.length > 0) {
+        const certs = db.prepare('SELECT skill_name, score FROM candidate_certifications WHERE candidate_id = ? AND is_certified = 1').all(profile.id);
+        const certifiedSkills = certs.map(c => c.skill_name);
+        const hasAllRequired = requiredSkills.every(s => certifiedSkills.includes(s));
+        if (hasAllRequired) {
+          initialStatus = 'assessment_completed';
+          const relevantCerts = certs.filter(c => requiredSkills.includes(c.skill_name));
+          assessmentScore = Math.round(relevantCerts.reduce((acc, c) => acc + c.score, 0) / relevantCerts.length || 100);
+        }
+      }
+    }
+
+    const result = db.prepare('INSERT INTO applications (job_id, candidate_id, status, cover_letter, video_cover_letter_url, referrer_id, assessment_score, assessment_completed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(job_id, profile.id, initialStatus, cover_letter, video_cover_letter_url, referrer_id || null, assessmentScore, assessmentScore ? new Date().toISOString() : null);
 
     const application = db.prepare('SELECT * FROM applications WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json({ success: true, data: application });

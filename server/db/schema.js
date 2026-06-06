@@ -242,6 +242,28 @@ export function initDB() {
       ip_address TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS candidate_certifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      candidate_id INTEGER REFERENCES candidate_profiles(id),
+      skill_name TEXT NOT NULL,
+      score REAL,
+      is_certified INTEGER DEFAULT 0,
+      taken_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS truehire_interviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      candidate_id INTEGER REFERENCES candidate_profiles(id),
+      job_id INTEGER REFERENCES jobs(id),
+      round_number INTEGER NOT NULL,
+      scheduled_at DATETIME,
+      interviewer_id INTEGER REFERENCES users(id),
+      status TEXT DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'completed', 'cancelled')),
+      video_url TEXT,
+      feedback_notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   try { db.exec("ALTER TABLE jobs ADD COLUMN bounty_amount INTEGER DEFAULT 0"); } catch(e) {}

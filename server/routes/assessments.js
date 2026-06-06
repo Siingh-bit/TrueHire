@@ -5,7 +5,7 @@ import { authMiddleware } from '../middleware/auth.js';
 const router = Router();
 
 // Question pools by skill
-const QUESTION_POOLS = {
+export const QUESTION_POOLS = {
   Python: [
     { text: 'What is the difference between a list and a tuple in Python?', type: 'mcq', options: ['Lists are immutable, tuples are mutable', 'Lists are mutable, tuples are immutable', 'Both are mutable', 'Both are immutable'], correct_answer: 1, difficulty: 'easy', points: 5 },
     { text: 'What is a Python decorator and how does it work?', type: 'short_answer', correct_answer: 'A decorator is a function that takes another function as input and extends its behavior without modifying it. It uses the @decorator syntax and is commonly used for logging, authentication, and caching.', difficulty: 'medium', points: 8 },
@@ -66,7 +66,7 @@ const QUESTION_POOLS = {
   ],
 };
 
-function generateQuestions(skills, config = {}) {
+export function generateQuestions(skills, config = {}) {
   const { difficulty = 'medium', count = 15 } = config;
   const questions = [];
   let id = 1;

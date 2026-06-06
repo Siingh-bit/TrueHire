@@ -6,6 +6,8 @@ import Landing from './pages/Landing';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import CandidateDashboard from './pages/Candidate/Dashboard';
+import CandidateCertifications from './pages/Candidate/Certifications';
+import CandidateInterviews from './pages/Candidate/InterviewCalendar';
 import CandidateProfile from './pages/Candidate/Profile';
 import JobSearch from './pages/Candidate/JobSearch';
 import JobDetail from './pages/Candidate/JobDetail';
@@ -24,6 +26,7 @@ import CandidateAvailability from './pages/Candidate/Availability';
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminCandidates from './pages/Admin/Candidates';
 import AdminPipeline from './pages/Admin/Pipeline';
+import AdminInterviews from './pages/Admin/Interviews';
 import MatchingCandidates from './pages/Employer/MatchingCandidates';
 
 import api from './api/client';
@@ -79,8 +82,9 @@ export default function App() {
                 <Route path="/candidate/profile" element={<ProtectedRoute role="candidate"><CandidateProfile /></ProtectedRoute>} />
                 <Route path="/candidate/jobs" element={<ProtectedRoute role="candidate"><JobSearch /></ProtectedRoute>} />
                 <Route path="/candidate/jobs/:id" element={<ProtectedRoute role="candidate"><JobDetail /></ProtectedRoute>} />
+                <Route path="/candidate/certifications" element={<ProtectedRoute role="candidate"><CandidateCertifications /></ProtectedRoute>} />
+                <Route path="/candidate/interviews" element={<ProtectedRoute role="candidate"><CandidateInterviews /></ProtectedRoute>} />
                 <Route path="/candidate/applications" element={<ProtectedRoute role="candidate"><Applications /></ProtectedRoute>} />
-                <Route path="/candidate/feedback/request" element={<ProtectedRoute role="candidate"><RequestFeedback /></ProtectedRoute>} />
                 <Route path="/candidate/availability" element={<ProtectedRoute role="candidate"><CandidateAvailability /></ProtectedRoute>} />
 
                 {/* Employer Routes */}
@@ -94,6 +98,7 @@ export default function App() {
                 <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
                 <Route path="/admin/candidates" element={<ProtectedRoute role="admin"><AdminCandidates /></ProtectedRoute>} />
                 <Route path="/admin/pipeline" element={<ProtectedRoute role="admin"><AdminPipeline /></ProtectedRoute>} />
+                <Route path="/admin/interviews" element={<ProtectedRoute role="admin"><AdminInterviews /></ProtectedRoute>} />
 
                 {/* Assessment Results */}
                 <Route path="/assessment/:id/results" element={<ProtectedRoute><AssessmentResults /></ProtectedRoute>} />
