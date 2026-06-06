@@ -24,12 +24,10 @@ export default function CandidateProfile() {
       const uploadData = new FormData();
       uploadData.append('resume', file);
       
-      const res = await fetch('/api/candidates/parse-resume', {
+      const data = await api.request('/candidates/parse-resume', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: uploadData
       });
-      const data = await res.json();
       
       if (data.success) {
         const pd = data.data;
