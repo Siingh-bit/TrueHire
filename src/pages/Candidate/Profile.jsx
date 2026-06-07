@@ -35,6 +35,7 @@ export default function CandidateProfile() {
         // Update main profile fields
         const newProfileData = {
           ...candidate,
+          full_name: pd.full_name || candidate.full_name || '',
           phone: pd.phone || candidate.phone || '',
           headline: pd.headline || candidate.headline || '',
           summary: pd.summary || candidate.summary || '',
@@ -60,7 +61,8 @@ export default function CandidateProfile() {
         setMessage('Error: ' + data.message);
       }
     } catch (err) {
-      setMessage('Error parsing resume.');
+      console.error(err);
+      setMessage('Error parsing resume: ' + (err.message || 'Unknown error'));
     } finally {
       setParsingResume(false);
       e.target.value = '';
