@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import multer from 'multer';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
+import { GoogleGenerativeAI } from '@google/generative-ai';
 const pdfParse = require('pdf-parse');
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -14,27 +15,68 @@ router.post('/parse-resume', authMiddleware, upload.single('resume'), async (req
     if (req.user.role !== 'candidate') return res.status(403).json({ success: false, message: 'Not a candidate' });
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
 
+    // 1. Try Gemini AI parsing if API key is present
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = `Extract the candidate's resume details from this document.
+Return ONLY a valid JSON object matching exactly this structure, with no markdown formatting or backticks:
+{
+  "email": "candidate@example.com",
+  "phone": "+1234567890",
+  "headline": "Professional title (e.g. Software Engineer)",
+  "summary": "2-3 sentences summarizing their professional background.",
+  "total_experience_years": 5,
+  "skills": [
+    { "skill_name": "JavaScript", "proficiency_level": "intermediate", "years_of_experience": 3 }
+  ],
+  "experience": [
+    { "company_name": "Tech Corp", "job_title": "Software Developer", "start_date": "2020-01-01", "description": "Developed web applications." }
+  ],
+  "education": [
+    { "institution": "University", "degree": "B.S.", "field_of_study": "Computer Science", "start_year": 2016, "end_year": 2020 }
+  ]
+}`;
+
+        const pdfPart = {
+          inlineData: {
+            data: req.file.buffer.toString("base64"),
+            mimeType: "application/pdf"
+          },
+        };
+
+        const result = await model.generateContent([prompt, pdfPart]);
+        const responseText = result.response.text();
+        
+        let cleanJsonStr = responseText.trim();
+        if (cleanJsonStr.startsWith('```json')) cleanJsonStr = cleanJsonStr.replace(/^```json\n/, '').replace(/\n```$/, '');
+        else if (cleanJsonStr.startsWith('```')) cleanJsonStr = cleanJsonStr.replace(/^```\n/, '').replace(/\n```$/, '');
+
+        const parsedData = JSON.parse(cleanJsonStr);
+        return res.json({ success: true, data: parsedData });
+      } catch (aiErr) {
+        console.error('Gemini API Error, falling back to mock:', aiErr);
+      }
+    }
+
+    // 2. Fallback to Mock parsing if no key or if Gemini fails
     let text = '';
     try {
       const data = await pdfParse(req.file.buffer);
       text = data.text;
     } catch (parseErr) {
       console.error('pdf-parse error (falling back to mock text):', parseErr);
-      // Fallback to mock text so the demo always works
       text = "Software Engineer with 4 years of experience. Skilled in JavaScript, React, Node.js, and SQL. Contact me at demo@example.com or +1234567890.";
     }
 
-    // Simple regex parsing
     const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
     const phoneMatch = text.match(/\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
-    
-    // Simulate skill extraction
     const possibleSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'SQL', 'Docker', 'AWS', 'CSS', 'HTML', 'Git', 'TypeScript', 'MongoDB', 'Express', 'Kubernetes', 'Go', 'Rust', 'C++'];
     const extractedSkills = possibleSkills.filter(skill => text.toLowerCase().includes(skill.toLowerCase()));
-
     const expMatch = text.match(/(\d+)\+?\s*years? of experience/i);
     const totalExperience = expMatch ? parseInt(expMatch[1]) : Math.floor(Math.random() * 5) + 2;
-
     const sentences = text.replace(/[\r\n]+/g, ' ').split('. ').filter(s => s.length > 30);
     const summary = sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : 'Experienced professional with a strong background in software development.');
 
@@ -47,12 +89,8 @@ router.post('/parse-resume', authMiddleware, upload.single('resume'), async (req
         summary: summary,
         total_experience_years: totalExperience,
         skills: extractedSkills.map(s => ({ skill_name: s, proficiency_level: 'intermediate', years_of_experience: Math.max(1, totalExperience - 1) })),
-        experience: [
-          { company_name: 'Tech Corp', job_title: 'Software Developer', start_date: '2020-01-01', description: 'Developed web applications and improved backend performance.' }
-        ],
-        education: [
-          { institution: 'University of Technology', degree: 'B.S. Computer Science', field_of_study: 'Computer Science', start_year: 2016, end_year: 2020 }
-        ]
+        experience: [{ company_name: 'Tech Corp', job_title: 'Software Developer', start_date: '2020-01-01', description: 'Developed web applications and improved backend performance.' }],
+        education: [{ institution: 'University of Technology', degree: 'B.S. Computer Science', field_of_study: 'Computer Science', start_year: 2016, end_year: 2020 }]
       }
     });
   } catch (err) {
