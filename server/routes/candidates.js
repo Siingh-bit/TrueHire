@@ -51,13 +51,15 @@ Return ONLY a valid JSON object matching exactly this structure, with no markdow
         const responseText = result.response.text();
         
         let cleanJsonStr = responseText.trim();
-        if (cleanJsonStr.startsWith('```json')) cleanJsonStr = cleanJsonStr.replace(/^```json\n/, '').replace(/\n```$/, '');
-        else if (cleanJsonStr.startsWith('```')) cleanJsonStr = cleanJsonStr.replace(/^```\n/, '').replace(/\n```$/, '');
+        if (cleanJsonStr.startsWith('```')) {
+          cleanJsonStr = cleanJsonStr.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '');
+        }
 
         const parsedData = JSON.parse(cleanJsonStr);
         return res.json({ success: true, data: parsedData });
       } catch (aiErr) {
-        console.error('Gemini API Error, falling back to mock:', aiErr);
+        console.error('Gemini API Error:', aiErr);
+        return res.status(500).json({ success: false, message: 'AI Parsing Failed: ' + aiErr.message });
       }
     }
 
