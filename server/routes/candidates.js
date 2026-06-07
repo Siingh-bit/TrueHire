@@ -50,20 +50,69 @@ Return ONLY a valid JSON object matching exactly this structure, with no markdow
         const tempFilePath = path.join(os.tmpdir(), `resume_${Date.now()}.pdf`);
         fs.writeFileSync(tempFilePath, req.file.buffer);
 
-        // Upload to Gemini
-        const uploadResult = await fileManager.uploadFile(tempFilePath, {
-          mimeType: "application/pdf",
-        });
+        let uploadResult = null;
+        try {
+          uploadResult = await fileManager.uploadFile(tempFilePath, {
+            mimeType: "application/pdf",
+          });
+        } catch(e) {
+          console.error("File upload failed:", e);
+        }
 
-        // Generate content
-        const result = await model.generateContent([
-          { fileData: { mimeType: uploadResult.file.mimeType, fileUri: uploadResult.file.uri } },
-          prompt
-        ]);
-        
-        // Clean up temp file locally and on Google's servers
+        let result = null;
+        let lastError = null;
+
+        // Strategy 1: File API with Gemini 1.5 models
+        if (uploadResult) {
+          const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-1.5-pro-latest"];
+          for (const modelName of modelsToTry) {
+            try {
+              const model = genAI.getGenerativeModel({ model: modelName });
+              result = await model.generateContent([
+                { fileData: { mimeType: uploadResult.file.mimeType, fileUri: uploadResult.file.uri } },
+                prompt
+              ]);
+              break;
+            } catch(e) {
+              console.error(`Model ${modelName} with File API failed:`, e.message);
+              lastError = e;
+            }
+          }
+        }
+
+        // Clean up temp file
         fs.unlinkSync(tempFilePath);
-        await fileManager.deleteFile(uploadResult.file.name).catch(() => {});
+        if (uploadResult) {
+          await fileManager.deleteFile(uploadResult.file.name).catch(() => {});
+        }
+
+        // Strategy 2: If File API fails, use pdf-parse and pass text
+        if (!result) {
+          console.log("File API failed or models 404'd. Falling back to pdf-parse + text prompt.");
+          try {
+            const parsedPdf = await pdfParse(req.file.buffer);
+            const textContent = parsedPdf.text;
+            
+            const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+            for (const modelName of modelsToTry) {
+              try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                result = await model.generateContent([
+                  `Here is the text extracted from a candidate's resume:\n\n${textContent}\n\n${prompt}`
+                ]);
+                break; // success
+              } catch (e) {
+                console.error(`Model ${modelName} with text failed:`, e.message);
+                lastError = e;
+              }
+            }
+          } catch(err) {
+             console.error("pdf-parse fallback also failed:", err);
+             lastError = new Error("Failed to parse PDF and AI models are unavailable. " + (lastError ? lastError.message : err.message));
+          }
+        }
+
+        if (!result) throw lastError;
 
         const responseText = result.response.text();
         
