@@ -10,7 +10,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-import pdfParse from 'pdf-parse';
+import pdfParse from 'pdf-parse-debugging-disabled';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
