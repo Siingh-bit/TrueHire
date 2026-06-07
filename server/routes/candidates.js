@@ -5,6 +5,11 @@ import multer from 'multer';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleAIFileManager } from '@google/generative-ai/server';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+
 const pdfParse = require('pdf-parse');
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -19,6 +24,7 @@ router.post('/parse-resume', authMiddleware, upload.single('resume'), async (req
     if (process.env.GEMINI_API_KEY) {
       try {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `Extract the candidate's resume details from this document.
@@ -40,14 +46,25 @@ Return ONLY a valid JSON object matching exactly this structure, with no markdow
   ]
 }`;
 
-        const pdfPart = {
-          inlineData: {
-            data: req.file.buffer.toString("base64"),
-            mimeType: "application/pdf"
-          },
-        };
+        // Save buffer to a temp file for the File API
+        const tempFilePath = path.join(os.tmpdir(), `resume_${Date.now()}.pdf`);
+        fs.writeFileSync(tempFilePath, req.file.buffer);
 
-        const result = await model.generateContent([prompt, pdfPart]);
+        // Upload to Gemini
+        const uploadResult = await fileManager.uploadFile(tempFilePath, {
+          mimeType: "application/pdf",
+        });
+
+        // Generate content
+        const result = await model.generateContent([
+          { fileData: { mimeType: uploadResult.file.mimeType, fileUri: uploadResult.file.uri } },
+          prompt
+        ]);
+        
+        // Clean up temp file locally and on Google's servers
+        fs.unlinkSync(tempFilePath);
+        await fileManager.deleteFile(uploadResult.file.name).catch(() => {});
+
         const responseText = result.response.text();
         
         let cleanJsonStr = responseText.trim();
