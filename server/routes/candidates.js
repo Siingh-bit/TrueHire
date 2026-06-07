@@ -117,27 +117,36 @@ Return ONLY a valid JSON object matching exactly this structure, with no markdow
           console.log("All AI models 404'd. Falling back to local offline regex extraction.");
           try {
             const parsedPdf = await pdfParse(req.file.buffer);
-            const text = parsedPdf.text;
+            const text = parsedPdf.text.replace(/\s+/g, ' ').trim();
             
             const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
             const phoneMatch = text.match(/\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
             
-            const possibleSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'SQL', 'Docker', 'AWS', 'CSS', 'HTML', 'Git', 'TypeScript', 'MongoDB', 'Express', 'Kubernetes', 'Go', 'Rust', 'C++'];
+            const nameMatch = text.match(/^([A-Z][a-zA-Z]*\s+[A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)?)/);
+            const fullName = nameMatch ? nameMatch[1] : '';
+
+            const possibleSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'SQL', 'Docker', 'AWS', 'CSS', 'HTML', 'Git', 'TypeScript', 'MongoDB', 'Express', 'Kubernetes', 'Go', 'Rust', 'C++', 'Recruitment', 'Onboarding', 'HR Operations', 'Talent Acquisition', 'Sourcing', 'Screening', 'Interviewing'];
             const extractedSkills = possibleSkills.filter(skill => text.toLowerCase().includes(skill.toLowerCase()));
 
             const expMatch = text.match(/(\d+)\+?\s*years? of experience/i);
             const totalExperience = expMatch ? parseInt(expMatch[1]) : 3;
 
-            const sentences = text.replace(/[\r\n]+/g, ' ').split('. ').filter(s => s.length > 30);
-            const summary = sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : '');
+            let summary = '';
+            const profileMatch = text.match(/(?:Profile|Summary)\s+(.+?)(?:Experience|Skills|Education|Work|$)/i);
+            if (profileMatch && profileMatch[1]) {
+                summary = profileMatch[1].trim().slice(0, 300) + '...';
+            } else {
+                summary = text.slice(0, 200).trim() + '...';
+            }
 
             return res.json({
               success: true,
               data: {
+                full_name: fullName,
                 email: emailMatch ? emailMatch[0] : '',
                 phone: phoneMatch ? phoneMatch[0] : '',
-                headline: 'Professional Candidate',
-                summary: summary || 'Experienced professional.',
+                headline: extractedSkills.includes('Recruitment') ? 'HR Professional' : 'Software Engineer',
+                summary: summary,
                 total_experience_years: totalExperience,
                 skills: extractedSkills.map(s => ({ skill_name: s, proficiency_level: 'intermediate', years_of_experience: Math.max(1, totalExperience - 1) })),
                 experience: [],
