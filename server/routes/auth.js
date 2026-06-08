@@ -55,7 +55,7 @@ router.post('/send-otp', authLimiter, async (req, res) => {
         const resendRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY.trim()}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
