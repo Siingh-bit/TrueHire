@@ -90,13 +90,21 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }); // 25MB max
 
 // POST /api/applications/upload-video
-router.post('/upload-video', authMiddleware, upload.single('video'), (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ success: false, message: 'No video uploaded' });
-    res.json({ success: true, url: '/uploads/' + req.file.filename });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Upload failed' });
-  }
+router.post('/upload-video', authMiddleware, (req, res) => {
+  upload.single('video')(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ success: false, message: 'Upload Error: ' + err.message });
+    } else if (err) {
+      return res.status(500).json({ success: false, message: 'Upload failed: ' + err.message });
+    }
+    
+    try {
+      if (!req.file) return res.status(400).json({ success: false, message: 'No video uploaded' });
+      res.json({ success: true, url: '/uploads/' + req.file.filename });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Upload failed' });
+    }
+  });
 });
 
 // POST /api/applications - Apply for a job

@@ -106,15 +106,26 @@ export default function JobDetail() {
                 <label>Video Pitch (TikTok-style 60s intro)</label>
                 <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
                   <input type="file" accept="video/mp4,video/webm" onChange={async (e) => {
-                    if(!e.target.files[0]) return;
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    if (file.size > 25 * 1024 * 1024) {
+                      setMessage('Error: File is too large. Maximum size is 25MB.');
+                      e.target.value = '';
+                      return;
+                    }
                     setUploadingVideo(true);
-                    const fd = new FormData(); fd.append('video', e.target.files[0]);
+                    setMessage('');
+                    const fd = new FormData(); fd.append('video', file);
                     try {
                       const res = await fetch('/api/applications/upload-video', { method: 'POST', headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`}, body: fd});
-                      const data = await res.json();
-                      if(data.success) setVideoUrl(data.url);
-                      else setMessage(data.message);
-                    } catch(err) { setMessage('Video upload failed'); }
+                      const data = await res.json().catch(() => ({ success: false, message: 'Server returned an invalid response (might be too large).' }));
+                      if(data.success) {
+                        setVideoUrl(data.url);
+                        setMessage('');
+                      } else {
+                        setMessage('Error: ' + data.message);
+                      }
+                    } catch(err) { setMessage('Error: Video upload failed. ' + err.message); }
                     finally { setUploadingVideo(false); }
                   }} className="btn btn--secondary" style={{ flex: 1 }} />
                   {uploadingVideo && <span style={{fontSize: 'var(--font-size-sm)'}}>Uploading...</span>}
