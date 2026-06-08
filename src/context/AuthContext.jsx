@@ -42,10 +42,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = async (email, password, otp) => {
+  const login = async (email, password) => {
     setError(null);
     try {
-      const response = await api.login(email, password, otp);
+      const response = await api.login(email, password);
       if (response.success) {
         setUser(response.data.user);
         setProfile(response.data.profile);

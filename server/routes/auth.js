@@ -39,14 +39,6 @@ router.post('/send-otp', authLimiter, async (req, res) => {
       if (existing) {
         return res.status(409).json({ success: false, message: 'Email already registered' });
       }
-    } else if (type === 'login') {
-      if (!password) {
-        return res.status(400).json({ success: false, message: 'Password is required for login OTP' });
-      }
-      const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-      if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
     } else {
       return res.status(400).json({ success: false, message: 'Invalid OTP type' });
     }
@@ -58,20 +50,24 @@ router.post('/send-otp', authLimiter, async (req, res) => {
     db.prepare('INSERT INTO otp_codes (email, otp, type, expires_at) VALUES (?, ?, ?, ?)').run(email, otp, type, expiresAt);
 
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      await transporter.sendMail({
-        from: `"TrueHire Auth" <${process.env.SMTP_USER}>`,
-        to: email,
-        subject: `Your TrueHire Verification Code`,
-        text: `Your verification code is: ${otp}. It will expire in 10 minutes.`,
-        html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It will expire in 10 minutes.</p>`,
-      });
+      try {
+        await transporter.sendMail({
+          from: `"TrueHire Auth" <${process.env.SMTP_USER}>`,
+          to: email,
+          subject: `Your TrueHire Verification Code`,
+          text: `Your verification code is: ${otp}. It will expire in 10 minutes.`,
+          html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It will expire in 10 minutes.</p>`,
+        });
+      } catch (emailErr) {
+        console.error('SMTP Send Error:', emailErr);
+        return res.status(500).json({ success: false, message: 'Failed to send OTP email. Please check configuration.' });
+      }
     } else {
       console.log(`[DEV ONLY] OTP for ${email}: ${otp}`);
-      // Send it back in dev if no SMTP is configured so the user can test without emails
-      // In production, we'd never do this. But it ensures Render works even if they forget env vars.
     }
 
-    res.json({ success: true, message: 'OTP sent successfully', devOtp: (!process.env.SMTP_USER) ? otp : undefined });
+    const isDev = process.env.NODE_ENV === 'development';
+    res.json({ success: true, message: 'OTP sent successfully', devOtp: isDev ? otp : undefined });
   } catch (err) {
     console.error('Send OTP error:', err);
     res.status(500).json({ success: false, message: 'Failed to send OTP' });
@@ -159,14 +155,9 @@ router.post('/register', (req, res) => {
 // POST /api/auth/login
 router.post('/login', authLimiter, (req, res) => {
   try {
-    const { email, password, otp } = req.body;
-    if (!email || !password || !otp) {
-      return res.status(400).json({ success: false, message: 'Email, password, and OTP are required' });
-    }
-
-    const otpCheck = verifyOTP(email, otp, 'login');
-    if (!otpCheck.valid) {
-      return res.status(400).json({ success: false, message: otpCheck.message });
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);

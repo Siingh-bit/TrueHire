@@ -63,10 +63,10 @@ class ApiClient {
     });
   }
 
-  async login(email, password, otp) {
+  async login(email, password) {
     const data = await this.request('/auth/login', {
       method: 'POST',
-      body: { email, password, otp },
+      body: { email, password },
     });
     if (data.data?.token) {
       this.setToken(data.data.token);
