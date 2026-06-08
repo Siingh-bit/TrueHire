@@ -312,7 +312,13 @@ export default function CandidateProfile() {
                 <div className="auth-field"><label>Description</label><textarea rows={3} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} /></div>
               </>)}
               {modal.type === 'skill' && (<>
-                <div className="auth-field"><label>Skill Name *</label><input required value={formData.skill_name || ''} onChange={e => setFormData({...formData, skill_name: e.target.value})} placeholder="e.g. Python, React, SQL" /></div>
+                <div className="auth-field">
+                  <label>Skill Name *</label>
+                  <input required list="skill-suggestions" value={formData.skill_name || ''} onChange={e => setFormData({...formData, skill_name: e.target.value})} placeholder="e.g. Python, React, SQL" />
+                  <datalist id="skill-suggestions">
+                    {['Excel', 'Advanced Excel', 'Microsoft Excel', 'Python', 'React', 'React Native', 'SQL', 'MySQL', 'PostgreSQL', 'JavaScript', 'TypeScript', 'Node.js', 'Machine Learning', 'Data Analysis', 'Data Science', 'Project Management', 'Java', 'C++', 'C#', '.NET', 'Communication', 'Leadership', 'Sales', 'Digital Marketing', 'SEO', 'HTML', 'CSS', 'AWS', 'Docker', 'Kubernetes', 'Git', 'Agile', 'Scrum', 'Figma', 'UI/UX Design', 'Tableau', 'Power BI', 'Financial Analysis', 'Accounting', 'Customer Service', 'Problem Solving'].filter(s => formData.skill_name && s.toLowerCase().includes(formData.skill_name.toLowerCase())).map(s => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
                 <div className="auth-row"><div className="auth-field"><label>Proficiency</label><select value={formData.proficiency_level || 'intermediate'} onChange={e => setFormData({...formData, proficiency_level: e.target.value})}><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="expert">Expert</option></select></div><div className="auth-field"><label>Years of Experience</label><input type="number" step="0.5" value={formData.years_of_experience || ''} onChange={e => setFormData({...formData, years_of_experience: e.target.value})} /></div></div>
               </>)}
               <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
