@@ -187,21 +187,21 @@ export default function Landing() {
             </div>
             <div className="footer__links">
               <h4>For Candidates</h4>
-              <a href="/register">Create Profile</a>
-              <a href="/candidate/jobs">Browse Jobs</a>
-              <a href="#">Skill Assessments</a>
+              <Link to="/register">Create Profile</Link>
+              <Link to="/register">Browse Jobs</Link>
+              <Link to="/register">Skill Assessments</Link>
             </div>
             <div className="footer__links">
               <h4>For Employers</h4>
-              <a href="/register">Post a Job</a>
-              <a href="#">Browse Talent</a>
-              <a href="#">Pricing</a>
+              <Link to="/register">Post a Job</Link>
+              <Link to="/register">Browse Talent</Link>
+              <Link to="/register">Pricing</Link>
             </div>
             <div className="footer__links">
               <h4>Company</h4>
-              <a href="#">About Us</a>
-              <a href="#">Contact</a>
-              <a href="#">Privacy Policy</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); alert('About Us page coming soon!'); }}>About Us</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); alert('Contact page coming soon!'); }}>Contact</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); alert('Privacy Policy coming soon!'); }}>Privacy Policy</a>
             </div>
           </div>
           <div className="footer__bottom">
