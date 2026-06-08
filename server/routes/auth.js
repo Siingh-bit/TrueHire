@@ -62,7 +62,7 @@ router.post('/send-otp', authLimiter, async (req, res) => {
         });
       } catch (emailErr) {
         console.error('SMTP Send Error:', emailErr);
-        return res.status(500).json({ success: false, message: 'Failed to send OTP email. Please check configuration.' });
+        return res.status(500).json({ success: false, message: 'Email Error: ' + emailErr.message });
       }
     } else {
       if (!isDev) {
