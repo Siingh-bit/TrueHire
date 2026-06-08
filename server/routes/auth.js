@@ -49,7 +49,34 @@ router.post('/send-otp', authLimiter, async (req, res) => {
 
     const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production';
 
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    // HTTP Email API (Bypasses Render's SMTP Firewall)
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resendRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'TrueHire <onboarding@resend.dev>',
+            to: email,
+            subject: 'Your TrueHire Verification Code',
+            html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It will expire in 10 minutes.</p>`
+          })
+        });
+        
+        if (!resendRes.ok) {
+          const errData = await resendRes.json();
+          throw new Error(errData.message || 'Resend API Error');
+        }
+      } catch (apiErr) {
+        console.error('HTTP API Send Error:', apiErr);
+        return res.status(500).json({ success: false, message: 'Email Error (HTTP): ' + apiErr.message });
+      }
+    } 
+    // Standard SMTP
+    else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
         await transporter.sendMail({
           from: `"TrueHire Auth" <${process.env.SMTP_USER}>`,
