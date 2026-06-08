@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import SettingsModal from './SettingsModal';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -9,6 +10,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -117,6 +119,9 @@ export default function Navbar() {
                       💬 Manager Feedback
                     </Link>
                   )}
+                  <button className="navbar__dropdown-item" onClick={() => { setDropdownOpen(false); setShowSettings(true); }}>
+                    ⚙️ Settings
+                  </button>
                   <button className="navbar__dropdown-item navbar__dropdown-item--danger" onClick={handleLogout}>
                     🚪 Logout
                   </button>
@@ -126,6 +131,8 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </nav>
   );
 }
