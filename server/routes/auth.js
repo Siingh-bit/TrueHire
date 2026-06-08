@@ -49,6 +49,8 @@ router.post('/send-otp', authLimiter, async (req, res) => {
     db.prepare('DELETE FROM otp_codes WHERE email = ? AND type = ?').run(email, type);
     db.prepare('INSERT INTO otp_codes (email, otp, type, expires_at) VALUES (?, ?, ?, ?)').run(email, otp, type, expiresAt);
 
+    const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production';
+
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
         await transporter.sendMail({
@@ -63,10 +65,12 @@ router.post('/send-otp', authLimiter, async (req, res) => {
         return res.status(500).json({ success: false, message: 'Failed to send OTP email. Please check configuration.' });
       }
     } else {
+      if (!isDev) {
+        return res.status(500).json({ success: false, message: 'Server error: Email provider (SMTP) is not configured in Render environment variables.' });
+      }
       console.log(`[DEV ONLY] OTP for ${email}: ${otp}`);
     }
 
-    const isDev = process.env.NODE_ENV === 'development';
     res.json({ success: true, message: 'OTP sent successfully', devOtp: isDev ? otp : undefined });
   } catch (err) {
     console.error('Send OTP error:', err);
