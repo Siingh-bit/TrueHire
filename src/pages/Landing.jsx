@@ -158,7 +158,7 @@ export default function Landing() {
           <div className="footer__grid">
             <div className="footer__brand">
               <div className="navbar__brand">
-                <div style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 'auto', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <img src="/logo.png" alt="Switchera" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 </div>
                 <span className="navbar__brand-text">Switchera</span>
