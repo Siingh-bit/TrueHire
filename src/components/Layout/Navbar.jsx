@@ -42,8 +42,8 @@ export default function Navbar() {
     <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
       <div className="navbar__container">
         <Link to="/" className="navbar__brand">
-          <div className="navbar__logo">
-            <img src="/logo.png" alt="Switchera Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          <div className="navbar__logo" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src="/logo.png" alt="Switchera Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           </div>
           <span className="navbar__brand-text">Switchera</span>
         </Link>
