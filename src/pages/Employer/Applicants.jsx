@@ -133,7 +133,7 @@ export default function Applicants() {
                   )}
                   {app.truehire_interviews && app.truehire_interviews.length > 0 && (
                     <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)', background: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.3)', borderRadius: 'var(--radius-md)' }}>
-                      <h4 style={{ marginBottom: '8px', fontSize: 'var(--font-size-sm)', color: '#ff9800' }}>📹 TrueHire Validation Recording</h4>
+                      <h4 style={{ marginBottom: '8px', fontSize: 'var(--font-size-sm)', color: '#ff9800' }}>📹 Switchera Validation Recording</h4>
                       {app.truehire_interviews.map(ti => (
                         <div key={ti.id} style={{ marginBottom: '8px' }}>
                           <p style={{ fontSize: 'var(--font-size-sm)' }}><strong>Status:</strong> {ti.status}</p>

@@ -33,34 +33,25 @@ export default function Landing() {
         <div className="hero__content container">
           <div className="hero__badge animate-fade-in-down">
             <span className="hero__badge-dot" />
-            Trusted by 10,000+ Companies Worldwide
+            Welcome to the future of hiring
           </div>
           <h1 className="hero__title animate-fade-in-up">
-            Where <span className="text-gradient">Verified Talent</span> Meets{' '}
-            <span className="text-gradient-accent">Trusted Employers</span>
+            This is <span className="text-gradient">Switchera</span> <br />
+            Where Merit Wins.
           </h1>
           <p className="hero__subtitle animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            The only hiring platform that verifies every credential, tests every skill with AI-powered assessments,
-            and protects companies from fake profiles. No more guessing — hire with confidence.
+            Switchera isn't just another job board. We are a unified hiring ecosystem that replaces traditional resumes with verified skills, rigorous assessments, and multi-level validations to connect top-tier professionals directly with trusted employers.
           </p>
           <div className="hero__actions animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             {!isAuthenticated ? (
               <>
                 <Link to="/register" className="hero__btn hero__btn--primary">
-                  <span>Get Started Free</span>
+                  <span>Get Started Now</span>
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </Link>
                 <Link to="/login" className="hero__btn hero__btn--secondary">
                   Sign In
                 </Link>
-                <button 
-                  onClick={() => {
-                    import('../api/client').then(({ default: api }) => api.trackAnalytics('app_download', '/download'));
-                    alert('Thanks for downloading the TrueHire app!');
-                  }}
-                  className="hero__btn hero__btn--secondary" style={{ borderColor: '#10b981', color: '#10b981' }}>
-                  📱 Download App
-                </button>
               </>
             ) : (
               <Link to={isCandidate ? '/candidate/dashboard' : '/employer/dashboard'} className="hero__btn hero__btn--primary">
@@ -68,85 +59,79 @@ export default function Landing() {
               </Link>
             )}
           </div>
-          <div className="hero__trust animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="hero__avatars">
-              {['PS', 'RK', 'AP', 'VS', 'NG'].map((init, i) => (
-                <div key={i} className="hero__avatar" style={{ animationDelay: `${i * 0.05}s` }}>{init}</div>
-              ))}
+        </div>
+      </section>
+
+      {/* The Idea / Why Switchera is Good */}
+      <section className="how-it-works reveal" style={{ background: 'var(--color-bg-secondary)', padding: 'var(--space-12) 0' }}>
+        <div className="container">
+          <h2 className="section__title">The Idea Behind Switchera</h2>
+          <p className="section__subtitle">Why the old way of hiring is broken, and how we fix it.</p>
+          
+          <div className="features__grid" style={{ marginTop: 'var(--space-8)' }}>
+            <div className="feature-card feature-card--primary">
+              <div className="feature-card__icon">📝</div>
+              <div className="feature-card__content">
+                <h3 className="feature-card__title">Resumes Are Dead</h3>
+                <p className="feature-card__desc">Traditional resumes are full of exaggerations and keywords meant to trick ATS bots. Switchera bypasses the resume by testing actual skills in real-time. If you have the skill, you get the job.</p>
+              </div>
             </div>
-            <span className="hero__trust-text">Join 50,000+ verified professionals</span>
+            
+            <div className="feature-card feature-card--secondary">
+              <div className="feature-card__icon">🛡️</div>
+              <div className="feature-card__content">
+                <h3 className="feature-card__title">Verified Integrity</h3>
+                <p className="feature-card__desc">Employers waste thousands of hours interviewing candidates who don't actually know the tech stack. Switchera candidates are pre-vetted through strict L1/L2 proctored interviews before employers ever see them.</p>
+              </div>
+            </div>
+
+            <div className="feature-card feature-card--accent">
+              <div className="feature-card__icon">⚖️</div>
+              <div className="feature-card__content">
+                <h3 className="feature-card__title">True Meritocracy</h3>
+                <p className="feature-card__desc">It doesn't matter what school you went to or who you know. Switchera ranks candidates purely based on their verified assessment scores and technical ability. Pure, unadulterated merit.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="stats reveal">
+      {/* Meet the Founder */}
+      <section className="reveal" style={{ padding: 'var(--space-12) 0' }}>
         <div className="container">
-          <div className="stats__grid">
-            {[
-              { value: '50K+', label: 'Verified Professionals', icon: '👤' },
-              { value: '10K+', label: 'Trusted Companies', icon: '🏢' },
-              { value: '98%', label: 'Verification Accuracy', icon: '✅' },
-              { value: '85%', label: 'Successful Hire Rate', icon: '🎯' },
-            ].map((stat, i) => (
-              <div key={i} className="stats__card" style={{ animationDelay: `${i * 0.1}s` }}>
-                <span className="stats__icon">{stat.icon}</span>
-                <span className="stats__value">{stat.value}</span>
-                <span className="stats__label">{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-8)', alignItems: 'center', background: 'var(--color-bg-secondary)', padding: 'var(--space-8)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
+            
+            <div style={{ flex: '1 1 300px', maxWidth: '400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+              <img src="/founder.jpg" alt="Nishal Singh - Founder of Switchera" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
+            </div>
 
-      {/* How it Works */}
-      <section className="how-it-works reveal">
-        <div className="container">
-          <h2 className="section__title">How TrueHire Works</h2>
-          <p className="section__subtitle">Three simple steps to verified hiring</p>
-          <div className="steps">
-            {[
-              { step: '01', icon: '📋', title: 'Build & Verify Profile', desc: 'Create your professional profile with education, experience, and skills. Our verification system validates everything — degrees, past employment, certifications.' },
-              { step: '02', icon: '🧠', title: 'Take AI Assessment', desc: 'Complete skill-specific assessments generated by AI. Face detection and tab monitoring ensure integrity. No cheating, no shortcuts — just real skills.' },
-              { step: '03', icon: '🚀', title: 'Get Hired with Confidence', desc: 'Employers see your verified profile, assessment scores, and optional manager feedback. Land your dream job based on proven merit.' },
-            ].map((item, i) => (
-              <div key={i} className="step-card" style={{ animationDelay: `${i * 0.15}s` }}>
-                <div className="step-card__number">{item.step}</div>
-                <div className="step-card__icon">{item.icon}</div>
-                <h3 className="step-card__title">{item.title}</h3>
-                <p className="step-card__desc">{item.desc}</p>
-                {i < 2 && <div className="step-card__connector" />}
+            <div style={{ flex: '2 1 400px' }}>
+              <div style={{ display: 'inline-block', padding: '4px 12px', background: 'rgba(45,121,242,0.1)', color: 'var(--color-primary-400)', borderRadius: '100px', fontSize: 'var(--font-size-sm)', fontWeight: 600, marginBottom: 'var(--space-4)' }}>
+                MEET THE FOUNDER
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <h2 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, marginBottom: 'var(--space-2)' }}>Nishal Singh</h2>
+              <p style={{ fontSize: 'var(--font-size-lg)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>Founder & CEO, Switchera</p>
+              
+              <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.8, marginBottom: 'var(--space-4)' }}>
+                "I built Switchera because I saw firsthand how inefficient, biased, and exhausting the global hiring market had become. Great engineers were being rejected by automated resume scanners, and companies were drowning in thousands of unqualified applications."
+              </p>
+              <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.8, marginBottom: 'var(--space-6)' }}>
+                "Switchera changes everything. We've built an ecosystem where your skills speak louder than your CV. We verify credentials, proctor skill assessments, and conduct technical interviews up-front so that when a candidate reaches an employer, the only question left is 'When can you start?'"
+              </p>
 
-      {/* Features */}
-      <section className="features reveal">
-        <div className="container">
-          <h2 className="section__title">Why TrueHire is Different</h2>
-          <p className="section__subtitle">End-to-end verification that traditional job boards can't match</p>
-          <div className="features__grid">
-            {[
-              { icon: '🛡️', title: 'Credential Verification', desc: 'Every degree, certification, and work experience is verified against official records. No more fake resumes slipping through.', color: 'primary' },
-              { icon: '🤖', title: 'AI-Powered Assessments', desc: 'Dynamic tests tailored to each job\'s requirements. Questions are generated based on required skills and difficulty levels.', color: 'secondary' },
-              { icon: '👁️', title: 'Anti-Cheat Proctoring', desc: 'Real-time face detection, tab-switch monitoring, and screen activity tracking. Every assessment maintains full integrity.', color: 'accent' },
-              { icon: '💬', title: 'Manager Feedback', desc: 'Optional endorsements from past managers add credibility. Transparent reviews visible to potential employers.', tag: 'Optional', color: 'warning' },
-              { icon: '⚡', title: 'Minimum 3 Years Experience', desc: 'Exclusively for experienced professionals. No entry-level noise — only proven talent with real industry experience.', color: 'danger' },
-              { icon: '📊', title: 'Skill Match Scoring', desc: 'Our algorithms calculate skill match percentages between candidates and jobs, ensuring the best fit for both parties.', color: 'success' },
-            ].map((feature, i) => (
-              <div key={i} className={`feature-card feature-card--${feature.color}`}>
-                <div className="feature-card__icon">{feature.icon}</div>
-                <div className="feature-card__content">
-                  <h3 className="feature-card__title">
-                    {feature.title}
-                    {feature.tag && <span className="feature-card__tag">{feature.tag}</span>}
-                  </h3>
-                  <p className="feature-card__desc">{feature.desc}</p>
-                </div>
+              <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); alert('LinkedIn coming soon!'); }} className="btn btn--secondary">
+                  LinkedIn
+                </a>
+                <a href="#" onClick={(e) => { e.preventDefault(); alert('Reddit coming soon!'); }} className="btn btn--secondary">
+                  Reddit
+                </a>
+                <a href="#" onClick={(e) => { e.preventDefault(); alert('Office: 123 Switchera Lane, Tech City\\nPhone: +1 (555) 000-0000'); }} className="btn btn--secondary">
+                  Contact Info
+                </a>
               </div>
-            ))}
+            </div>
+
           </div>
         </div>
       </section>
@@ -156,14 +141,11 @@ export default function Landing() {
         <div className="container">
           <div className="cta__card">
             <div className="cta__orb" />
-            <h2 className="cta__title">Ready to Hire With Confidence?</h2>
-            <p className="cta__desc">Join thousands of companies and professionals who trust TrueHire for verified, merit-based hiring.</p>
+            <h2 className="cta__title">Ready to Join Switchera?</h2>
+            <p className="cta__desc">Join thousands of companies and professionals who trust our ecosystem for verified, merit-based hiring.</p>
             <div className="cta__actions">
               <Link to="/register" className="hero__btn hero__btn--primary">
-                Start Hiring Now →
-              </Link>
-              <Link to="/register" className="hero__btn hero__btn--secondary">
-                Find Verified Jobs
+                Create Your Account →
               </Link>
             </div>
           </div>
@@ -176,12 +158,8 @@ export default function Landing() {
           <div className="footer__grid">
             <div className="footer__brand">
               <div className="navbar__brand">
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="url(#logo-grad2)" />
-                  <path d="M8 16L13 21L24 10" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                  <defs><linearGradient id="logo-grad2" x1="0" y1="0" x2="32" y2="32"><stop stopColor="#2d79f2" /><stop offset="1" stopColor="#8b2dff" /></linearGradient></defs>
-                </svg>
-                <span className="navbar__brand-text">TrueHire</span>
+                <img src="/logo.png" alt="Switchera" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+                <span className="navbar__brand-text">Switchera</span>
               </div>
               <p className="footer__tagline">Where verified talent meets trusted employers.</p>
             </div>
@@ -205,7 +183,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="footer__bottom">
-            <p>© 2026 TrueHire. All rights reserved. Built with integrity.</p>
+            <p>© {new Date().getFullYear()} Switchera. All rights reserved. Built with integrity.</p>
           </div>
         </div>
       </footer>

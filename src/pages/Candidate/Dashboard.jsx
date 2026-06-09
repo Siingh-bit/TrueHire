@@ -31,7 +31,7 @@ export default function CandidateDashboard() {
     <div className="dashboard animate-fade-in-up">
       <div className="dashboard__header">
         <h1 className="dashboard__welcome">Welcome back, <span>{profile?.full_name?.split(' ')[0]}</span> 👋</h1>
-        <p className="dashboard__subtitle">Here's your TrueHire dashboard overview</p>
+        <p className="dashboard__subtitle">Here's your Switchera dashboard overview</p>
       </div>
 
       <div className="stats-row">

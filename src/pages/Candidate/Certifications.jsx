@@ -43,8 +43,8 @@ export default function Certifications() {
   return (
     <div className="dashboard animate-fade-in-up">
       <div className="dashboard__header">
-        <h1 className="dashboard__welcome">TrueHire <span>Certifications</span> 🏅</h1>
-        <p className="dashboard__subtitle">Pass a rigorous skill assessment to bypass job-specific tests</p>
+        <h1 className="dashboard__welcome">Switchera <span>Certifications</span> 🏅</h1>
+        <p className="dashboard__subtitle">Take industry-standard assessments to earn your Switchera Certifications.</p>
       </div>
 
       <div style={{ display: 'grid', gap: 'var(--space-6)' }}>

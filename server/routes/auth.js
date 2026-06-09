@@ -60,10 +60,21 @@ router.post('/send-otp', authLimiter, async (req, res) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: 'TrueHire <onboarding@resend.dev>',
-            to: email,
-            subject: 'Your TrueHire Verification Code',
-            html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It will expire in 10 minutes.</p>`
+            from: 'Switchera Auth <onboarding@resend.dev>',
+            to: isDev ? 'delivered@resend.dev' : email,
+            subject: 'Your Switchera Verification Code',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                <h2 style="color: #2d79f2; text-align: center;">Switchera Account Verification</h2>
+                <p>Hello,</p>
+                <p>Thank you for registering. Please use the following 6-digit code to verify your email address:</p>
+                <div style="background-color: #f4f7f6; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 4px; margin: 20px 0;">
+                  ${otp}
+                </div>
+                <p style="color: #666; font-size: 14px;">This code will expire in 10 minutes.</p>
+                <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">&copy; ${new Date().getFullYear()} Switchera. All rights reserved.</p>
+              </div>
+            `
           })
         });
         

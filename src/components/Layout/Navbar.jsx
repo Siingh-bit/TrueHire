@@ -43,18 +43,9 @@ export default function Navbar() {
       <div className="navbar__container">
         <Link to="/" className="navbar__brand">
           <div className="navbar__logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="url(#logo-grad)" />
-              <path d="M8 16L13 21L24 10" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-              <defs>
-                <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
-                  <stop stopColor="#2d79f2" />
-                  <stop offset="1" stopColor="#8b2dff" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <img src="/logo.png" alt="Switchera Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          <span className="navbar__brand-text">TrueHire</span>
+          <span className="navbar__brand-text">Switchera</span>
         </Link>
 
         <button className="navbar__toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">

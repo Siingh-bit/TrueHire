@@ -193,7 +193,7 @@ export default function CandidateProfile() {
         <div className="card" style={{ padding: 'var(--space-8)' }}>
           <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'rgba(45,121,242,0.1)', borderRadius: 'var(--radius-md)' }}>
             <h3 style={{ marginBottom: 'var(--space-2)', color: 'var(--color-primary-400)' }}>Seamless Job Switch Planning</h3>
-            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>Configure your availability to help TrueHire schedule your Level 1 & Level 2 interviews smoothly around your current job, and set your expected joining date for potential employers.</p>
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>Configure your availability to help Switchera schedule your Level 1 & Level 2 interviews smoothly around your current job, and set your expected joining date for potential employers.</p>
           </div>
           <form onSubmit={async (e) => {
             e.preventDefault();
