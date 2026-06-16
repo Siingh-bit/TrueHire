@@ -75,7 +75,7 @@ export default function Register() {
         {step === 1 && (
           <>
             <div className="auth-card__header">
-              <h1 className="auth-card__title">Join TrueHire</h1>
+              <h1 className="auth-card__title">Join Switchera</h1>
               <p className="auth-card__subtitle">Select how you want to use the platform</p>
             </div>
             {error && <div className="auth-error">{error}</div>}
@@ -222,7 +222,7 @@ export default function Register() {
         {step === 4 && (
           <div className="auth-success">
             <div className="auth-success__icon">🎉</div>
-            <h2 className="auth-success__title">Welcome to TrueHire!</h2>
+            <h2 className="auth-success__title">Welcome to Switchera!</h2>
             <p className="auth-success__desc">Your account has been created successfully.</p>
             <button className="auth-submit" onClick={() => navigate(role === 'candidate' ? '/candidate/dashboard' : '/employer/dashboard')}>
               Go to Dashboard →

@@ -57,7 +57,7 @@ export default function Certifications() {
               <div>
                 <h3 style={{ fontSize: '1.25rem', marginBottom: 'var(--space-2)' }}>{skill}</h3>
                 {isCertified ? (
-                  <span className="badge badge--success" style={{ fontSize: '1rem', padding: '6px 12px' }}>✅ TrueHire Certified ({cert.score}%)</span>
+                  <span className="badge badge--success" style={{ fontSize: '1rem', padding: '6px 12px' }}>✅ Switchera Certified ({cert.score}%)</span>
                 ) : cert ? (
                   <span className="badge badge--danger">Failed ({cert.score}%)</span>
                 ) : (

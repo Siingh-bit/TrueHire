@@ -87,14 +87,14 @@ export function seedDB() {
   }
 
   // Admin
-  insertUser.run('admin@truehire.com', hash, 'admin');
-  db.prepare('UPDATE users SET is_super_admin = 1 WHERE email = ?').run('admin@truehire.com');
+  insertUser.run('admin@switchera.com', hash, 'admin');
+  db.prepare('UPDATE users SET is_super_admin = 1 WHERE email = ?').run('admin@switchera.com');
 
-  insertUser.run('admin1@truehire.com', hash, 'admin');
-  insertUser.run('admin2@truehire.com', hash, 'admin');
-  insertUser.run('admin3@truehire.com', hash, 'admin');
-  insertUser.run('admin4@truehire.com', hash, 'admin');
-  insertUser.run('admin5@truehire.com', hash, 'admin');
+  insertUser.run('admin1@switchera.com', hash, 'admin');
+  insertUser.run('admin2@switchera.com', hash, 'admin');
+  insertUser.run('admin3@switchera.com', hash, 'admin');
+  insertUser.run('admin4@switchera.com', hash, 'admin');
+  insertUser.run('admin5@switchera.com', hash, 'admin');
 
   db.prepare('UPDATE candidate_profiles SET agreement_accepted = 1, agreement_accepted_at = CURRENT_TIMESTAMP, agreement_version = ?').run('1.0');
 

@@ -34,7 +34,7 @@ export default function AdminInterviews() {
   return (
     <div className="dashboard animate-fade-in-up">
       <div className="dashboard__header">
-        <h1 className="dashboard__welcome">TrueHire <span>Interview Validation</span> 📹</h1>
+        <h1 className="dashboard__welcome">Switchera <span>Interview Validation</span> 📹</h1>
         <p className="dashboard__subtitle">Manage candidate interviews and upload recordings for employer validation.</p>
       </div>
 

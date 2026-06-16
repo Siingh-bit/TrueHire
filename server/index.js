@@ -61,7 +61,7 @@ app.use('/api/messages', messageRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'TrueHire API is running', timestamp: new Date().toISOString() });
+  res.json({ success: true, message: 'Switchera API is running', timestamp: new Date().toISOString() });
 });
 
 // Serve frontend in production
@@ -83,12 +83,12 @@ try {
   seedDB();
   if (!process.env.VERCEL) {
     app.listen(PORT, () => {
-      console.log(`\n🚀 TrueHire API Server running at http://localhost:${PORT}`);
+      console.log(`\n🚀 Switchera API Server running at http://localhost:${PORT}`);
       console.log(`📖 Health check: http://localhost:${PORT}/api/health`);
       console.log(`\n📧 Demo Accounts (password: password123):`);
       console.log(`   Candidate: priya.sharma@email.com`);
       console.log(`   Employer:  hr@technova.com`);
-      console.log(`   Admin:     admin@truehire.com\n`);
+      console.log(`   Admin:     admin@switchera.com\n`);
     });
   }
 } catch (err) {

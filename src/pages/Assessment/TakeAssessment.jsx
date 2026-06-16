@@ -112,7 +112,17 @@ export default function TakeAssessment() {
   }, [id]);
 
   const startAssessment = async () => {
-    await startCamera();
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user', width: 200, height: 150 },
+        audio: true 
+      });
+      streamRef.current = mediaStream;
+      setStream(mediaStream);
+    } catch (err) {
+      alert('⚠️ Camera and Microphone access is REQUIRED to take this assessment. Please allow access in your browser settings and try again.');
+      return;
+    }
     await api.startAssessment(id);
     setStatus('in_progress');
   };
@@ -173,7 +183,7 @@ export default function TakeAssessment() {
       {/* Top bar */}
       <div className="assessment-topbar">
         <div className="assessment-topbar__left">
-          <span className="assessment-topbar__logo">🧠 TrueHire Assessment</span>
+          <span className="assessment-topbar__logo">🧠 Switchera Assessment</span>
           <span className="assessment-topbar__progress">Q{current + 1}/{assessment?.questions?.length}</span>
         </div>
         <div className="assessment-topbar__center">

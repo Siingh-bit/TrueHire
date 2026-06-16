@@ -34,7 +34,7 @@ export default function Login() {
 
   const fillDemo = (type) => {
     if (type === 'candidate') { setEmail('priya.sharma@email.com'); setPassword('password123'); }
-    else if (type === 'admin') { setEmail('admin@truehire.com'); setPassword('password123'); }
+    else if (type === 'admin') { setEmail('admin@switchera.com'); setPassword('password123'); }
     else { setEmail('hr@technova.com'); setPassword('password123'); }
   };
 
@@ -50,7 +50,7 @@ export default function Login() {
             <svg width="40" height="40" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#lg)" /><path d="M8 16L13 21L24 10" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /><defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop stopColor="#2d79f2" /><stop offset="1" stopColor="#8b2dff" /></linearGradient></defs></svg>
           </Link>
           <h1 className="auth-card__title">Welcome Back</h1>
-          <p className="auth-card__subtitle">Sign in to your TrueHire account</p>
+          <p className="auth-card__subtitle">Sign in to your Switchera account</p>
         </div>
 
         {error && <div className="auth-error">{error}</div>}

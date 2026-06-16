@@ -91,9 +91,9 @@ router.post('/send-otp', authLimiter, async (req, res) => {
     else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
         await transporter.sendMail({
-          from: `"TrueHire Auth" <${process.env.SMTP_USER}>`,
+          from: `"Switchera Auth" <${process.env.SMTP_USER}>`,
           to: email,
-          subject: `Your TrueHire Verification Code`,
+          subject: `Your Switchera Verification Code`,
           text: `Your verification code is: ${otp}. It will expire in 10 minutes.`,
           html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It will expire in 10 minutes.</p>`,
         });

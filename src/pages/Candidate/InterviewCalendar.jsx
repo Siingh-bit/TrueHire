@@ -48,8 +48,8 @@ export default function InterviewCalendar() {
   return (
     <div className="dashboard animate-fade-in-up">
       <div className="dashboard__header">
-        <h1 className="dashboard__welcome">TrueHire <span>Interview Validation</span> 📅</h1>
-        <p className="dashboard__subtitle">Schedule your TrueHire validation interview. A human interviewer will meet you to validate your skills.</p>
+        <h1 className="dashboard__welcome">Switchera <span>Interview Validation</span> 📅</h1>
+        <p className="dashboard__subtitle">Schedule your Switchera validation interview. A human interviewer will meet you to validate your skills.</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>

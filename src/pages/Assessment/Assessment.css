@@ -9,7 +9,7 @@
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Start Screen */
