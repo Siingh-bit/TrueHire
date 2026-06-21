@@ -1,6 +1,10 @@
 node_modules/
 dist/
+# Local SQLite database (never commit)
 server/truehire.db
+server/db/truehire.db
+server/db/truehire.db-shm
+server/db/truehire.db-wal
 .env
 *.log
 .DS_Store

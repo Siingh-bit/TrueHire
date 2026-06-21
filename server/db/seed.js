@@ -63,13 +63,13 @@ export function seedDB() {
   // ── 100 Candidates ──
   const candidateEmails = [];
   for (let i = 1; i <= 100; i++) {
-    const email = `candidate${i}@email.com`;
+    const email = i === 1 ? 'priya.sharma@email.com' : `candidate${i}@email.com`;
     insertUser.run(email, hash, 'candidate');
     candidateEmails.push(email);
     
     insertCandidate.run(
       currentUserId,
-      `Candidate User ${i}`,
+      i === 1 ? 'Priya Sharma' : `Candidate User ${i}`,
       `+1-555-01${i.toString().padStart(2, '0')}`,
       `${jobRoles[i % jobRoles.length]} Professional`,
       `Driven and experienced professional looking for the next big challenge.`,
