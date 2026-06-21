@@ -280,6 +280,8 @@ export function initDB() {
   try { db.exec("ALTER TABLE applications ADD COLUMN rejection_reason TEXT"); } catch(e) {}
   try { db.exec("ALTER TABLE applications ADD COLUMN video_cover_letter_url TEXT"); } catch(e) {}
   try { db.exec("ALTER TABLE applications ADD COLUMN referrer_id INTEGER REFERENCES users(id)"); } catch(e) {}
+  try { db.exec("ALTER TABLE applications ADD COLUMN ai_score INTEGER"); } catch(e) {}
+  try { db.exec("ALTER TABLE applications ADD COLUMN ai_summary TEXT"); } catch(e) {}
 
   // Phase 1: Job-switch platform migrations
   try { db.exec("ALTER TABLE users ADD COLUMN is_super_admin INTEGER DEFAULT 0"); } catch(e) {}

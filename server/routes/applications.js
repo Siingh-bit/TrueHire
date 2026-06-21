@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import db from '../db/schema.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { analyzeCandidateMatch } from '../services/aiMatcher.js';
 
 const router = Router();
 
@@ -176,6 +177,41 @@ router.put('/:id/status', authMiddleware, (req, res) => {
     res.json({ success: true, data: updated });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to update status' });
+  }
+});
+
+// POST /api/applications/:id/analyze - AI Score Application
+router.post('/:id/analyze', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'employer') return res.status(403).json({ success: false, message: 'Only employers can trigger analysis' });
+
+    const application = db.prepare('SELECT a.*, j.employer_id, j.title, j.description, j.required_skills FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.id = ?').get(req.params.id);
+    if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+
+    const profile = db.prepare('SELECT id FROM employer_profiles WHERE user_id = ?').get(req.user.id);
+    if (application.employer_id !== profile.id) return res.status(403).json({ success: false, message: 'Not your job posting' });
+
+    // Gather candidate data
+    const candidateProfile = db.prepare('SELECT * FROM candidate_profiles WHERE id = ?').get(application.candidate_id);
+    const skills = db.prepare('SELECT * FROM skills WHERE candidate_id = ?').all(application.candidate_id);
+    const education = db.prepare('SELECT * FROM education WHERE candidate_id = ?').all(application.candidate_id);
+    const experience = db.prepare('SELECT * FROM work_experience WHERE candidate_id = ?').all(application.candidate_id);
+    
+    candidateProfile.skills = skills;
+    candidateProfile.education = education;
+    candidateProfile.experience = experience;
+
+    const jobInfo = { title: application.title, description: application.description, required_skills: application.required_skills };
+
+    const aiResult = await analyzeCandidateMatch(candidateProfile, jobInfo);
+
+    db.prepare('UPDATE applications SET ai_score = ?, ai_summary = ? WHERE id = ?').run(aiResult.match_score, JSON.stringify(aiResult.summary_bullets), req.params.id);
+
+    const updated = db.prepare('SELECT * FROM applications WHERE id = ?').get(req.params.id);
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    console.error('AI Analysis Error:', err);
+    res.status(500).json({ success: false, message: err.message || 'Failed to analyze application' });
   }
 });
 

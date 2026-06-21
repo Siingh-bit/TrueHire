@@ -71,6 +71,7 @@ export default function Navbar() {
           ) : isEmployer ? (
             <>
               <Link to="/employer/dashboard" className="navbar__link" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              <Link to="/employer/analytics" className="navbar__link" onClick={() => setMenuOpen(false)}>Analytics</Link>
               <Link to="/employer/post-job" className="navbar__link" onClick={() => setMenuOpen(false)}>Post Job</Link>
               <Link to="/employer/jobs" className="navbar__link" onClick={() => setMenuOpen(false)}>Manage Jobs</Link>
             </>

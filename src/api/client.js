@@ -235,6 +235,12 @@ class ApiClient {
     });
   }
 
+  async analyzeApplication(id) {
+    return this.request(`/applications/${id}/analyze`, {
+      method: 'POST',
+    });
+  }
+
   // Assessments
   async getAssessment(id) {
     return this.request(`/assessments/${id}`);
@@ -337,6 +343,10 @@ class ApiClient {
       method: 'POST',
       body: { event_type, path }
     }).catch(() => {});
+  }
+
+  async getEmployerAnalytics() {
+    return this.request('/analytics/employer');
   }
 }
 

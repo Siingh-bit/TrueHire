@@ -102,6 +102,7 @@ export default function InterviewCalendar() {
               <div className="interview-item__footer">
                 <span className="badge badge--primary">{i.status}</span>
                 {i.video_url && <a href={i.video_url} target="_blank" rel="noreferrer" className="btn btn--sm btn--secondary">View Recording</a>}
+                <Link to={`/interview/live/${i.id}`} className="btn btn--primary btn--sm">🔴 Join Live Room</Link>
               </div>
             </div>
           ))}

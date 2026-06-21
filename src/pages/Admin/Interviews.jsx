@@ -75,14 +75,17 @@ export default function AdminInterviews() {
                   <input type="text" defaultValue={i.feedback_notes} id={`notes-${i.id}`} className="form-control" placeholder="Interviewer notes..." />
                 </td>
                 <td style={{ padding: '12px' }}>
-                  <button className="btn btn--primary btn--sm" onClick={() => {
-                    handleSave(
-                      i.id, 
-                      document.getElementById(`video-${i.id}`).value,
-                      document.getElementById(`notes-${i.id}`).value,
-                      document.getElementById(`status-${i.id}`).value
-                    );
-                  }}>Save</button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn--primary btn--sm" onClick={() => {
+                      handleSave(
+                        i.id, 
+                        document.getElementById(`video-${i.id}`).value,
+                        document.getElementById(`notes-${i.id}`).value,
+                        document.getElementById(`status-${i.id}`).value
+                      );
+                    }}>Save</button>
+                    <Link to={`/interview/live/${i.id}`} className="btn btn--secondary btn--sm">🔴 Join</Link>
+                  </div>
                 </td>
               </tr>
             ))}

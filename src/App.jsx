@@ -13,6 +13,7 @@ import JobSearch from './pages/Candidate/JobSearch';
 import JobDetail from './pages/Candidate/JobDetail';
 import Applications from './pages/Candidate/Applications';
 import EmployerDashboard from './pages/Employer/Dashboard';
+import EmployerAnalytics from './pages/Employer/Analytics';
 import PostJob from './pages/Employer/PostJob';
 import ManageJobs from './pages/Employer/ManageJobs';
 import Applicants from './pages/Employer/Applicants';
@@ -54,6 +55,8 @@ function PageTracker() {
   return null;
 }
 
+import LiveRoom from './pages/Interview/LiveRoom';
+
 export default function App() {
   return (
     <div className="app">
@@ -63,6 +66,13 @@ export default function App() {
         <Route path="/assessment/:id" element={
           <ProtectedRoute role="candidate">
             <TakeAssessment />
+          </ProtectedRoute>
+        } />
+
+        {/* Live Interview has no navbar - fullscreen */}
+        <Route path="/interview/live/:id" element={
+          <ProtectedRoute>
+            <LiveRoom />
           </ProtectedRoute>
         } />
 
@@ -90,6 +100,7 @@ export default function App() {
 
                 {/* Employer Routes */}
                 <Route path="/employer/dashboard" element={<ProtectedRoute role="employer"><EmployerDashboard /></ProtectedRoute>} />
+                <Route path="/employer/analytics" element={<ProtectedRoute role="employer"><EmployerAnalytics /></ProtectedRoute>} />
                 <Route path="/employer/post-job" element={<ProtectedRoute role="employer"><PostJob /></ProtectedRoute>} />
                 <Route path="/employer/jobs" element={<ProtectedRoute role="employer"><ManageJobs /></ProtectedRoute>} />
                 <Route path="/employer/jobs/:jobId/applicants" element={<ProtectedRoute role="employer"><Applicants /></ProtectedRoute>} />

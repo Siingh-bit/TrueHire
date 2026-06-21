@@ -77,12 +77,53 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+
 // Initialize and start
 try {
   initDB();
   seedDB();
+  
+  const httpServer = createServer(app);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: process.env.NODE_ENV === 'production' ? true : ['http://localhost:5173', 'http://localhost:3000'],
+      methods: ["GET", "POST"]
+    }
+  });
+
+  io.on('connection', (socket) => {
+    // Live Interview Room Logic
+    socket.on('join-room', (roomId, userId) => {
+      socket.join(roomId);
+      socket.to(roomId).emit('user-connected', userId);
+
+      socket.on('disconnect', () => {
+        socket.to(roomId).emit('user-disconnected', userId);
+      });
+
+      socket.on('code-change', (code) => {
+        socket.to(roomId).emit('code-update', code);
+      });
+
+      // WebRTC Signaling
+      socket.on('offer', (payload) => {
+        socket.to(roomId).emit('offer', payload);
+      });
+
+      socket.on('answer', (payload) => {
+        socket.to(roomId).emit('answer', payload);
+      });
+
+      socket.on('ice-candidate', (payload) => {
+        socket.to(roomId).emit('ice-candidate', payload);
+      });
+    });
+  });
+
   if (!process.env.VERCEL) {
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`\n🚀 Switchera API Server running at http://localhost:${PORT}`);
       console.log(`📖 Health check: http://localhost:${PORT}/api/health`);
       console.log(`\n📧 Demo Accounts (password: password123):`);

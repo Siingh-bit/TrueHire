@@ -15,6 +15,7 @@ export default function Applicants() {
   const [rejectingApp, setRejectingApp] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [activeChat, setActiveChat] = useState(null);
+  const [analyzingApp, setAnalyzingApp] = useState(null);
 
   const REJECTION_REASONS = [
     'Requires more experience',
@@ -44,6 +45,18 @@ export default function Applicants() {
   const handleConfirmReject = () => {
     if (!rejectionReason) return;
     updateStatus(rejectingApp, 'rejected', rejectionReason);
+  };
+
+  const handleAnalyze = async (appId) => {
+    setAnalyzingApp(appId);
+    try {
+      await api.analyzeApplication(appId);
+      loadApplicants();
+    } catch (err) {
+      alert(err.message || 'Failed to analyze application');
+    } finally {
+      setAnalyzingApp(null);
+    }
   };
 
   if (loading) return <div className="dashboard"><div className="page-loader"><div className="spinner" /></div></div>;
@@ -92,8 +105,27 @@ export default function Applicants() {
                       <span style={{ fontWeight: 600, color: app.assessment.score >= 70 ? 'var(--color-accent-400)' : 'var(--color-warning-400)' }}>{app.assessment.score}%</span>
                     </div>
                   )}
+                  {app.ai_score != null && (
+                    <div style={{ fontSize: 'var(--font-size-sm)', marginTop: '4px' }}>
+                      <span style={{ color: 'var(--color-text-tertiary)' }}>AI Match: </span>
+                      <span style={{ fontWeight: 600, color: app.ai_score >= 80 ? 'var(--color-success-400)' : app.ai_score >= 60 ? 'var(--color-warning-400)' : 'var(--color-danger-400)' }}>{app.ai_score}%</span>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* AI Summary */}
+              {app.ai_summary && (
+                <div style={{ marginTop: 'var(--space-3)', background: 'rgba(45, 121, 242, 0.05)', border: '1px solid rgba(45, 121, 242, 0.2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>🤖</span>
+                    <span style={{ fontWeight: 600, color: 'var(--color-primary-400)', fontSize: 'var(--font-size-sm)' }}>AI Analysis</span>
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 'var(--space-4)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {JSON.parse(app.ai_summary).map((bullet, idx) => <li key={idx}>{bullet}</li>)}
+                  </ul>
+                </div>
+              )}
 
               {/* Skills */}
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: 'var(--space-3)' }}>
@@ -105,13 +137,18 @@ export default function Applicants() {
                 ))}
               </div>
 
-              <div style={{ marginTop: 'var(--space-3)', display: 'flex', gap: '8px' }}>
+              <div style={{ marginTop: 'var(--space-3)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <button className="btn btn--secondary btn--sm" onClick={() => setExpanded(expanded === app.id ? null : app.id)}>
                   {expanded === app.id ? 'Hide Details' : 'View Details'} ↓
                 </button>
                 <button className="btn btn--primary btn--sm" onClick={() => setActiveChat(app.id)}>💬 Message</button>
                 <button className="btn btn--primary btn--sm" onClick={() => updateStatus(app.id, 'shortlisted')}>Shortlist</button>
                 <button className="btn btn--danger btn--sm" onClick={() => updateStatus(app.id, 'rejected')}>Reject</button>
+                {!app.ai_score && (
+                  <button className="btn btn--secondary btn--sm" onClick={() => handleAnalyze(app.id)} disabled={analyzingApp === app.id}>
+                    {analyzingApp === app.id ? 'Analyzing...' : '🤖 AI Match'}
+                  </button>
+                )}
               </div>
 
               {expanded === app.id && (
