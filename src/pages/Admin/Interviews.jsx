@@ -6,16 +6,20 @@ export default function AdminInterviews() {
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api.request('/api/interviews/all')
+  const fetchInterviews = () => {
+    api.request('/interviews/all')
       .then(res => setInterviews(res.data || []))
       .catch(() => setInterviews([]))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchInterviews();
   }, []);
 
   const handleSave = async (id, video_url, feedback_notes, status) => {
     try {
-      const res = await api.request(`/api/interviews/${id}/recording`, {
+      const res = await api.request(`/interviews/${id}/recording`, {
         method: 'PUT',
         body: JSON.stringify({ video_url, feedback_notes, status })
       });

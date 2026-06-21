@@ -41,11 +41,11 @@ export default function Applications() {
       ) : (
         <div className="job-cards">
           {filtered.map(app => (
-            <div key={app.id} className="card" style={{ padding: 'var(--space-5)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
+            <div key={app.id} className="card">
+              <div className="app-card__header">
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 'var(--font-size-lg)', marginBottom: '2px' }}>{app.job_title}</div>
-                  <div style={{ color: 'var(--color-primary-400)' }}>{app.company_name}</div>
+                  <div className="app-card__title">{app.job_title}</div>
+                  <div className="app-card__company">{app.company_name}</div>
                 </div>
                 <span className={`badge badge--${STATUS_COLORS[app.status]}`}>{STATUS_LABELS[app.status]}</span>
               </div>
@@ -55,16 +55,16 @@ export default function Applications() {
                 <span className="job-card__meta-item">📅 Applied {new Date(app.applied_at).toLocaleDateString()}</span>
               </div>
               {app.assessment_score && (
-                <div style={{ marginTop: 'var(--space-3)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-tertiary)' }}>Assessment Score</span>
-                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: app.assessment_score >= 70 ? 'var(--color-accent-400)' : 'var(--color-warning-400)' }}>{app.assessment_score}%</span>
+                <div className="app-card__score">
+                  <div className="app-card__score-header">
+                    <span className="app-card__score-label">Assessment Score</span>
+                    <span className={`app-card__score-value ${app.assessment_score >= 70 ? 'app-card__score-value--high' : 'app-card__score-value--low'}`}>{app.assessment_score}%</span>
                   </div>
                   <div className="score-bar"><div className={`score-bar__fill score-bar__fill--${app.assessment_score >= 70 ? 'high' : app.assessment_score >= 50 ? 'medium' : 'low'}`} style={{ width: `${app.assessment_score}%` }} /></div>
                 </div>
               )}
               {app.status === 'assessment_pending' && (
-                <div style={{ marginTop: 'var(--space-3)' }}>
+                <div className="mt-4">
                   {app.assessment?.id ? (
                     <Link to={`/assessment/${app.assessment.id}`} className="btn btn--primary btn--sm">🧠 Take Assessment →</Link>
                   ) : (
@@ -73,18 +73,18 @@ export default function Applications() {
                 </div>
               )}
               {app.assessment?.id && app.status === 'assessment_completed' && (
-                <div style={{ marginTop: 'var(--space-3)' }}>
+                <div className="mt-4">
                   <Link to={`/assessment/${app.assessment.id}/results`} className="btn btn--secondary btn--sm">📊 View Results</Link>
                 </div>
               )}
               {app.status === 'rejected' && app.rejection_reason && (
-                <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--radius-md)' }}>
-                  <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-danger-400)' }}>Feedback: </span>
-                  <span style={{ fontSize: 'var(--font-size-sm)' }}>{app.rejection_reason}</span>
+                <div className="app-card__feedback">
+                  <span className="app-card__feedback-label">Feedback: </span>
+                  <span className="app-card__feedback-text">{app.rejection_reason}</span>
                 </div>
               )}
               
-              <div style={{ marginTop: 'var(--space-3)', borderTop: '1px solid var(--color-border-primary)', paddingTop: 'var(--space-3)' }}>
+              <div className="app-card__actions">
                 <button className="btn btn--secondary btn--sm" onClick={() => setActiveChat(app.id)}>💬 Message Employer</button>
               </div>
             </div>
@@ -110,7 +110,6 @@ function GenerateBtn({ applicationId }) {
     } catch (err) {
       if (err.message.includes('already exists')) {
         // Assessment exists, try to get the ID
-        alert('Assessment already generated. Refreshing...');
         window.location.reload();
       }
     }

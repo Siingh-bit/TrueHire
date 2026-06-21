@@ -9,10 +9,11 @@ export default function InterviewCalendar() {
   const [selectedJob, setSelectedJob] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [toast, setToast] = useState({ message: '', type: '' });
 
   useEffect(() => {
     Promise.all([
-      api.request('/api/interviews/my').catch(() => ({ data: [] })),
+      api.request('/interviews/my').catch(() => ({ data: [] })),
       api.getMyApplications().catch(() => ({ data: [] }))
     ]).then(([intRes, appRes]) => {
       setInterviews(intRes.data || []);
@@ -21,25 +22,34 @@ export default function InterviewCalendar() {
     }).finally(() => setLoading(false));
   }, []);
 
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: '', type: '' }), 4000);
+  };
+
   const handleSchedule = async (e) => {
     e.preventDefault();
-    if (!selectedJob || !date || !time) return alert('Please fill all fields');
+    if (!selectedJob || !date || !time) {
+      showToast('Please fill all fields', 'error');
+      return;
+    }
     
     const datetime = new Date(`${date}T${time}`).toISOString();
     
     try {
-      const res = await api.request('/api/interviews/schedule', {
+      const res = await api.request('/interviews/schedule', {
         method: 'POST',
         body: JSON.stringify({ job_id: selectedJob, scheduled_at: datetime })
       });
       if (res.success) {
-        alert('Interview scheduled!');
+        showToast('Interview scheduled successfully!');
         window.location.reload();
       } else {
-        alert(res.message);
+        showToast(res.message, 'error');
       }
     } catch (err) {
-      alert('Failed to schedule');
+      console.error('Schedule error:', err);
+      showToast(err.message || 'Failed to schedule interview', 'error');
     }
   };
 
@@ -52,10 +62,12 @@ export default function InterviewCalendar() {
         <p className="dashboard__subtitle">Schedule your Switchera validation interview. A human interviewer will meet you to validate your skills.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
+      {toast.message && <div className={`toast toast--${toast.type}`}>{toast.message}</div>}
+
+      <div className="page-grid-2">
         <div className="card">
-          <h2>Schedule a Slot</h2>
-          <form onSubmit={handleSchedule} className="form" style={{ marginTop: 'var(--space-4)' }}>
+          <h2 className="card__header">📋 Schedule a Slot</h2>
+          <form onSubmit={handleSchedule}>
             <div className="form-group">
               <label>Select Job</label>
               <select className="form-control" value={selectedJob} onChange={e => setSelectedJob(e.target.value)} required>
@@ -71,22 +83,28 @@ export default function InterviewCalendar() {
               <label>Time</label>
               <input type="time" className="form-control" value={time} onChange={e => setTime(e.target.value)} required />
             </div>
-            <button type="submit" className="btn btn--primary" style={{ width: '100%' }}>Confirm Time Slot</button>
+            <button type="submit" className="btn btn--primary btn--lg" style={{ width: '100%' }}>Confirm Time Slot</button>
           </form>
         </div>
 
         <div className="card">
-          <h2>My Scheduled Interviews</h2>
-          <div style={{ marginTop: 'var(--space-4)' }}>
-            {interviews.length === 0 ? <p>No interviews scheduled.</p> : interviews.map(i => (
-              <div key={i.id} style={{ padding: 'var(--space-3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-2)' }}>
-                <strong>{i.job_title}</strong> at {i.company_name}<br/>
-                <span style={{ color: 'var(--color-text-secondary)' }}>{new Date(i.scheduled_at).toLocaleString()}</span><br/>
-                Status: <span className="badge badge--primary">{i.status}</span>
-                {i.video_url && <div style={{ marginTop: '8px' }}><a href={i.video_url} target="_blank" rel="noreferrer" className="btn btn--sm btn--secondary">View Recording</a></div>}
+          <h2 className="card__header">📅 My Scheduled Interviews</h2>
+          {interviews.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state__icon">📭</div>
+              <div className="empty-state__title">No interviews scheduled</div>
+              <div className="empty-state__desc">Schedule your first validation interview using the form</div>
+            </div>
+          ) : interviews.map(i => (
+            <div key={i.id} className="interview-item">
+              <div className="interview-item__title">{i.job_title} at {i.company_name}</div>
+              <div className="interview-item__meta">{new Date(i.scheduled_at).toLocaleString()}</div>
+              <div className="interview-item__footer">
+                <span className="badge badge--primary">{i.status}</span>
+                {i.video_url && <a href={i.video_url} target="_blank" rel="noreferrer" className="btn btn--sm btn--secondary">View Recording</a>}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

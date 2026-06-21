@@ -38,7 +38,7 @@ export default function CandidateDashboard() {
         <div className="stat-card">
           <div className="stat-card__label">Profile Completeness</div>
           <div className="stat-card__value stat-card__value--primary">{completeness}%</div>
-          <div className="score-bar" style={{ marginTop: '8px' }}>
+          <div className="score-bar mt-2">
             <div className={`score-bar__fill score-bar__fill--${completeness > 70 ? 'high' : 'medium'}`} style={{ width: `${completeness}%` }} />
           </div>
         </div>
@@ -58,16 +58,16 @@ export default function CandidateDashboard() {
         </div>
       </div>
 
-      <div className="quick-actions" style={{ flexWrap: 'wrap' }}>
+      <div className="quick-actions">
         <Link to="/candidate/jobs" className="btn btn--primary">🔍 Search Jobs</Link>
-        <Link to="/candidate/certifications" className="btn btn--secondary" style={{ background: 'rgba(255,152,0,0.15)', borderColor: 'rgba(255,152,0,0.3)', color: '#ff9800' }}>🏅 Get Certified</Link>
-        <Link to="/candidate/interviews" className="btn btn--secondary" style={{ background: 'rgba(45,121,242,0.15)', borderColor: 'rgba(45,121,242,0.3)', color: 'var(--color-primary-400)' }}>📅 Schedule Validation</Link>
+        <Link to="/candidate/certifications" className="btn btn--secondary">🏅 Get Certified</Link>
+        <Link to="/candidate/interviews" className="btn btn--secondary">📅 Schedule Validation</Link>
         <Link to="/candidate/profile" className="btn btn--secondary">✏️ Edit Profile</Link>
         <Link to="/candidate/applications" className="btn btn--secondary">📋 My Applications</Link>
       </div>
 
       {/* Recent Applications */}
-      <div style={{ marginBottom: 'var(--space-8)' }}>
+      <div className="page-section">
         <div className="section-header">
           <h2 className="section-title">Recent Applications</h2>
           <Link to="/candidate/applications" className="section-link">View All →</Link>
@@ -105,16 +105,16 @@ export default function CandidateDashboard() {
           <h2 className="section-title">Recommended Jobs</h2>
           <Link to="/candidate/jobs" className="section-link">View All →</Link>
         </div>
-        <div className="job-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-4)' }}>
+        <div className="job-cards grid grid-3 gap-4">
           {jobs.slice(0, 6).map(job => (
             <Link key={job.id} to={`/candidate/jobs/${job.id}`} className="job-card">
               <div className="job-card__title">{job.title}</div>
               <div className="job-card__company">{job.company_name}</div>
-              <div className="job-card__meta" style={{ marginTop: '8px' }}>
+              <div className="job-card__meta mt-2">
                 <span className="job-card__meta-item">📍 {job.location}</span>
                 <span className="job-card__meta-item">💰 ₹{(job.salary_min/100000).toFixed(0)}L - ₹{(job.salary_max/100000).toFixed(0)}L</span>
               </div>
-              <div className="job-card__skills" style={{ marginTop: '8px' }}>
+              <div className="job-card__skills mt-2">
                 {job.required_skills?.slice(0, 4).map(s => <span key={s} className="skill-tag">{s}</span>)}
               </div>
             </Link>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
 import '../Auth/Login.css';
+import '../../styles/dashboard.css';
 
 export default function Agreement() {
   const [agreement, setAgreement] = useState(null);
@@ -39,7 +40,7 @@ export default function Agreement() {
     }
   };
 
-  if (!agreement) return <div className="auth-page"><div className="auth-card animate-fade-in-up"><p style={{color:'var(--color-text-secondary)'}}>Loading agreement...</p></div></div>;
+  if (!agreement) return <div className="auth-page"><div className="auth-card animate-fade-in-up"><div className="page-loader"><div className="spinner" /></div></div></div>;
 
   return (
     <div className="auth-page">
@@ -53,23 +54,21 @@ export default function Agreement() {
           <p className="auth-card__subtitle">Version {agreement.version} • Last updated: {agreement.lastUpdated}</p>
         </div>
         {error && <div className="auth-error">{error}</div>}
-        <div style={{ maxHeight: '400px', overflowY: 'auto', padding: 'var(--space-4)', background: 'rgba(0,0,0,0.2)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)' }}>
+        <div className="agreement-body">
           {agreement.clauses.map(clause => (
-            <label key={clause.id} style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)', cursor: 'pointer', alignItems: 'flex-start' }}>
+            <label key={clause.id} className="agreement-clause">
               <input
                 type="checkbox"
                 checked={checked[clause.id] || false}
                 onChange={() => setChecked(prev => ({ ...prev, [clause.id]: !prev[clause.id] }))}
-                style={{ marginTop: '4px', accentColor: 'var(--color-primary-500)', width: '18px', height: '18px', flexShrink: 0 }}
               />
               <div>
-                <div style={{ color: 'var(--color-text-primary)', fontWeight: 600, marginBottom: '4px' }}>{clause.title}</div>
-                <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>{clause.text}</div>
+                <div className="agreement-clause__title">{clause.title}</div>
+                <div className="agreement-clause__text">{clause.text}</div>
               </div>
             </label>
           ))}
-          <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: 'var(--space-4) 0' }} />
-          <label style={{ display: 'flex', gap: 'var(--space-3)', cursor: 'pointer', alignItems: 'center' }}>
+          <label className="agreement-select-all">
             <input
               type="checkbox"
               checked={allChecked}
@@ -80,13 +79,13 @@ export default function Agreement() {
               }}
               style={{ accentColor: 'var(--color-primary-500)', width: '18px', height: '18px', flexShrink: 0 }}
             />
-            <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>Select All Terms</div>
+            <span className="agreement-select-all__label">Select All Terms</span>
           </label>
         </div>
         <button className="auth-submit" disabled={!allChecked || loading} onClick={handleAccept}>
           {loading ? <span className="spinner-sm" /> : 'I Accept All Terms & Conditions'}
         </button>
-        <p style={{ color: 'var(--color-text-tertiary)', fontSize: '0.8rem', textAlign: 'center', marginTop: 'var(--space-3)' }}>
+        <p className="mt-4" style={{ color: 'var(--color-text-tertiary)', fontSize: '0.8rem', textAlign: 'center' }}>
           By accepting, you agree to all clauses above. Your acceptance will be recorded with a timestamp and IP address.
         </p>
       </div>

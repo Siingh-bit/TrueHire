@@ -21,7 +21,8 @@ router.post('/schedule', authMiddleware, (req, res) => {
 
     res.json({ success: true, message: 'Interview scheduled successfully' });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to schedule interview' });
+    console.error('Error scheduling interview:', err);
+    res.status(500).json({ success: false, message: 'Failed to schedule interview: ' + err.message });
   }
 });
 

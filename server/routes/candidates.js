@@ -25,7 +25,7 @@ router.post('/parse-resume', authMiddleware, upload.single('resume'), async (req
       try {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `Extract the candidate's resume details from this document.
 Return ONLY a valid JSON object matching exactly this structure, with no markdown formatting or backticks:
@@ -64,7 +64,7 @@ Return ONLY a valid JSON object matching exactly this structure, with no markdow
 
         // Strategy 1: File API with Gemini 1.5 models
         if (uploadResult) {
-          const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-1.5-pro-latest"];
+          const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
           for (const modelName of modelsToTry) {
             try {
               const model = genAI.getGenerativeModel({ model: modelName });
@@ -93,7 +93,7 @@ Return ONLY a valid JSON object matching exactly this structure, with no markdow
             const parsedPdf = await pdfParse(req.file.buffer);
             const textContent = parsedPdf.text;
             
-            const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+            const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
             for (const modelName of modelsToTry) {
               try {
                 const model = genAI.getGenerativeModel({ model: modelName });

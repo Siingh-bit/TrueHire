@@ -120,7 +120,7 @@ export default function Landing() {
               </p>
 
               <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); alert('LinkedIn coming soon!'); }} className="btn btn--secondary">
+                <a href="https://www.linkedin.com/company/switchera-in/" target="_blank" rel="noopener noreferrer" className="btn btn--secondary">
                   LinkedIn
                 </a>
                 <a href="#" onClick={(e) => { e.preventDefault(); alert('Reddit coming soon!'); }} className="btn btn--secondary">

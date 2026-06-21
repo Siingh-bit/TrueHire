@@ -249,3 +249,96 @@ button {
   h1 { font-size: var(--font-size-2xl); }
   .container { padding: 0 var(--space-3); }
 }
+
+/* ============================================
+   UI/UX Polish  (appended — additive & reversible)
+   ============================================ */
+
+/* Living background — gentle breathing glow */
+body::before {
+  animation: bgBreath 14s ease-in-out infinite;
+}
+@keyframes bgBreath {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
+/* Accessible, theme-aware focus ring (keyboard navigation only) */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Buttons — tactile micro-interactions */
+button {
+  transition: transform var(--transition-fast),
+              box-shadow var(--transition-fast),
+              filter var(--transition-fast),
+              background var(--transition-base),
+              opacity var(--transition-fast);
+}
+button:not(:disabled):hover { filter: brightness(1.06); }
+button:not(:disabled):active { transform: translateY(1px) scale(0.99); }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Inputs — soft, theme-aware focus glow */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-border-accent);
+}
+::placeholder { color: var(--color-text-tertiary); opacity: 1; }
+
+/* Glass cards — depth + gentle lift on hover */
+.glass-card { box-shadow: var(--shadow-md); }
+.glass-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-xl); }
+
+/* Gradient scrollbar thumb */
+::-webkit-scrollbar-thumb { background: var(--gradient-primary); }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  body::before { animation: none; opacity: 1; }
+}
+
+/* ============================================
+   Dark-Theme Native Form Controls
+   ============================================ */
+
+/* Date/time picker icon — make it visible on dark bg */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Light theme — restore normal icons */
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="time"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+/* Select option elements — dark bg in dropdown */
+option {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  padding: var(--space-2) var(--space-3);
+}
+
