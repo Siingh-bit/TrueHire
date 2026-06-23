@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = 'truehire-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'truehire-secret-key-2024';
 const JWT_EXPIRY = '7d';
 
 export function generateToken(user) {

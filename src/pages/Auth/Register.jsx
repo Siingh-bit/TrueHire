@@ -6,7 +6,7 @@ import './Login.css';
 export default function Register() {
   const [step, setStep] = useState(1);
   const [role, setRole] = useState('');
-  const [formData, setFormData] = useState({ email: '', password: '', full_name: '', phone: '', headline: '', total_experience_years: '', company_name: '', industry: '', company_size: '', website: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', confirm_password: '', full_name: '', phone: '', headline: '', total_experience_years: '', company_name: '', industry: '', company_size: '', website: '' });
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,8 +24,8 @@ export default function Register() {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (role === 'candidate' && Number(formData.total_experience_years) < 3) {
-      setError('Minimum 3 years of experience required'); return;
+    if (formData.password !== formData.confirm_password) {
+      setError('Passwords do not match'); return;
     }
     setLoading(true);
     setError('');
@@ -119,14 +119,18 @@ export default function Register() {
                       <input type="password" value={formData.password} onChange={e => updateField('password', e.target.value)} placeholder="Min 6 characters" required minLength={6} />
                     </div>
                   </div>
+                  <div className="auth-field">
+                    <label>Confirm Password *</label>
+                    <input type="password" value={formData.confirm_password} onChange={e => updateField('confirm_password', e.target.value)} placeholder="Re-enter your password" required minLength={6} />
+                  </div>
                   <div className="auth-row">
                     <div className="auth-field">
                       <label>Phone</label>
                       <input type="tel" value={formData.phone} onChange={e => updateField('phone', e.target.value)} placeholder="+91-XXXXXXXXXX" />
                     </div>
                     <div className="auth-field">
-                      <label>Total Experience (Years) *</label>
-                      <input type="number" min="3" value={formData.total_experience_years} onChange={e => updateField('total_experience_years', e.target.value)} placeholder="Min 3 years" required />
+                      <label>Total Experience (Years)</label>
+                      <input type="number" min="0" step="0.5" value={formData.total_experience_years} onChange={e => updateField('total_experience_years', e.target.value)} placeholder="0 if fresher" />
                     </div>
                   </div>
                   <div className="auth-field">
@@ -149,6 +153,10 @@ export default function Register() {
                       <label>Password *</label>
                       <input type="password" value={formData.password} onChange={e => updateField('password', e.target.value)} placeholder="Min 6 characters" required minLength={6} />
                     </div>
+                  </div>
+                  <div className="auth-field">
+                    <label>Confirm Password *</label>
+                    <input type="password" value={formData.confirm_password} onChange={e => updateField('confirm_password', e.target.value)} placeholder="Re-enter your password" required minLength={6} />
                   </div>
                   <div className="auth-row">
                     <div className="auth-field">

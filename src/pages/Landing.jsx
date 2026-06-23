@@ -99,13 +99,9 @@ export default function Landing() {
       {/* Meet the Founder */}
       <section className="reveal" style={{ padding: 'var(--space-12) 0' }}>
         <div className="container">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-8)', alignItems: 'center', background: 'var(--color-bg-secondary)', padding: 'var(--space-8)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
+          <div style={{ maxWidth: '780px', margin: '0 auto', textAlign: 'center', background: 'var(--gradient-card)', padding: 'var(--space-10) var(--space-8)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--color-border-primary)' }}>
             
-            <div style={{ flex: '1 1 300px', maxWidth: '400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-              <img src="/founder.jpg" alt="Nishal Singh - Founder of Switchera" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
-            </div>
-
-            <div style={{ flex: '2 1 400px' }}>
+            <div>
               <div style={{ display: 'inline-block', padding: '4px 12px', background: 'rgba(45,121,242,0.1)', color: 'var(--color-primary-400)', borderRadius: '100px', fontSize: 'var(--font-size-sm)', fontWeight: 600, marginBottom: 'var(--space-4)' }}>
                 MEET THE FOUNDER
               </div>
@@ -119,7 +115,7 @@ export default function Landing() {
                 "Switchera changes everything. We've built an ecosystem where your skills speak louder than your CV. We verify credentials, proctor skill assessments, and conduct technical interviews up-front so that when a candidate reaches an employer, the only question left is 'When can you start?'"
               </p>
 
-              <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <a href="https://www.linkedin.com/company/switchera-in/" target="_blank" rel="noopener noreferrer" className="btn btn--secondary">
                   LinkedIn
                 </a>

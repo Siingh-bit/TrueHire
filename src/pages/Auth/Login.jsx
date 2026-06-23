@@ -34,7 +34,6 @@ export default function Login() {
 
   const fillDemo = (type) => {
     if (type === 'candidate') { setEmail('priya.sharma@email.com'); setPassword('password123'); }
-    else if (type === 'admin') { setEmail('admin@switchera.com'); setPassword('password123'); }
     else { setEmail('hr@technova.com'); setPassword('password123'); }
   };
 
@@ -69,14 +68,15 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="auth-demo">
-          <p>Try demo accounts:</p>
-          <div className="auth-demo__btns">
-            <button onClick={() => fillDemo('candidate')} className="auth-demo__btn">👤 Candidate</button>
-            <button onClick={() => fillDemo('employer')} className="auth-demo__btn">🏢 Employer</button>
-            <button onClick={() => fillDemo('admin')} className="auth-demo__btn">🛡️ Admin</button>
+        {import.meta.env.DEV && (
+          <div className="auth-demo">
+            <p>Try demo accounts:</p>
+            <div className="auth-demo__btns">
+              <button onClick={() => fillDemo('candidate')} className="auth-demo__btn">👤 Candidate</button>
+              <button onClick={() => fillDemo('employer')} className="auth-demo__btn">🏢 Employer</button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="auth-footer">
           Don't have an account? <Link to="/register">Create one</Link>

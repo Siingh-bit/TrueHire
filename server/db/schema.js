@@ -35,7 +35,7 @@ export function initDB() {
       avatar_url TEXT,
       headline TEXT,
       summary TEXT,
-      total_experience_years REAL NOT NULL CHECK(total_experience_years >= 3),
+      total_experience_years REAL NOT NULL DEFAULT 0 CHECK(total_experience_years >= 0),
       current_location TEXT,
       preferred_locations TEXT,
       expected_salary_min INTEGER,

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 import { initDB } from './db/schema.js';
-import { seedDB } from './db/seed.js';
+import { seedDB, ensureAdmin } from './db/seed.js';
 
 import authRoutes from './routes/auth.js';
 import candidateRoutes from './routes/candidates.js';
@@ -83,8 +83,11 @@ import { Server } from 'socket.io';
 // Initialize and start
 try {
   initDB();
-  seedDB();
-  
+  if (process.env.NODE_ENV !== 'production' || process.env.SEED_DEMO === 'true') {
+    seedDB();
+  }
+  ensureAdmin();
+
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {

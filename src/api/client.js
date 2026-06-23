@@ -89,6 +89,18 @@ class ApiClient {
     return this.request('/auth/me');
   }
 
+  async updateName(name) {
+    return this.request('/auth/name', { method: 'PUT', body: { name } });
+  }
+
+  async updateEmail(newEmail, currentPassword) {
+    return this.request('/auth/email', { method: 'PUT', body: { newEmail, currentPassword } });
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    return this.request('/auth/change-password', { method: 'POST', body: { currentPassword, newPassword } });
+  }
+
   logout() {
     this.removeToken();
   }

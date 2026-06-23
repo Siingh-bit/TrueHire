@@ -86,17 +86,32 @@ export function seedDB() {
     currentUserId++;
   }
 
-  // Admin
-  insertUser.run('admin@switchera.com', hash, 'admin');
-  db.prepare('UPDATE users SET is_super_admin = 1 WHERE email = ?').run('admin@switchera.com');
-
-  insertUser.run('admin1@switchera.com', hash, 'admin');
-  insertUser.run('admin2@switchera.com', hash, 'admin');
-  insertUser.run('admin3@switchera.com', hash, 'admin');
-  insertUser.run('admin4@switchera.com', hash, 'admin');
-  insertUser.run('admin5@switchera.com', hash, 'admin');
+  // (Admin accounts are NOT seeded here — the single owner admin is provisioned
+  //  from ADMIN_EMAIL / ADMIN_PASSWORD via ensureAdmin() on server start.)
 
   db.prepare('UPDATE candidate_profiles SET agreement_accepted = 1, agreement_accepted_at = CURRENT_TIMESTAMP, agreement_version = ?').run('1.0');
 
-  console.log('🌱 Database seeded with 100 candidates, 50 jobs, and 6 admins.');
+  console.log('🌱 Database seeded with 100 candidates and 50 jobs.');
+}
+
+// Provisions exactly one admin (the owner) from environment variables.
+// Only ADMIN_EMAIL can ever be admin; any other admin rows are removed.
+export function ensureAdmin() {
+  const email = (process.env.ADMIN_EMAIL || '').trim();
+  const password = process.env.ADMIN_PASSWORD || '';
+  if (!email || !password) {
+    console.log('⚠️  ADMIN_EMAIL / ADMIN_PASSWORD not set — no admin account provisioned.');
+    return;
+  }
+  const hash = bcrypt.hashSync(password, 10);
+  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+  if (existing) {
+    db.prepare("UPDATE users SET password_hash = ?, role = 'admin' WHERE email = ?").run(hash, email);
+  } else {
+    db.prepare("INSERT INTO users (email, password_hash, role) VALUES (?, ?, 'admin')").run(email, hash);
+  }
+  try { db.prepare('UPDATE users SET is_super_admin = 1 WHERE email = ?').run(email); } catch (e) {}
+  // Defense-in-depth: only the owner email may hold admin.
+  db.prepare("DELETE FROM users WHERE role IN ('admin','super_admin') AND email != ?").run(email);
+  console.log(`🔐 Owner admin ensured for ${email}`);
 }

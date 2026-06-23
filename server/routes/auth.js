@@ -156,9 +156,7 @@ router.post('/register', (req, res) => {
       return res.status(409).json({ success: false, message: 'Email already registered' });
     }
 
-    if (role === 'candidate' && (!profileData.total_experience_years || profileData.total_experience_years < 3)) {
-      return res.status(400).json({ success: false, message: 'Minimum 3 years of experience required' });
-    }
+    // Experience is optional — freshers are welcome (no minimum).
 
     const password_hash = bcrypt.hashSync(password, 10);
     const userResult = db.prepare('INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)').run(email, password_hash, role);
@@ -171,7 +169,7 @@ router.post('/register', (req, res) => {
         profileData.full_name || 'New User',
         profileData.phone || null,
         profileData.headline || null,
-        profileData.total_experience_years,
+        Number(profileData.total_experience_years) || 0,
         profileData.current_location || null
       );
       profile = db.prepare('SELECT * FROM candidate_profiles WHERE user_id = ?').get(userId);
@@ -207,6 +205,12 @@ router.post('/login', authLimiter, (req, res) => {
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
     if (!user || !bcrypt.compareSync(password, user.password_hash)) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // Admin access is restricted to the configured owner email only.
+    if ((user.role === 'admin' || user.role === 'super_admin') &&
+        email.toLowerCase() !== (process.env.ADMIN_EMAIL || '').toLowerCase()) {
+      return res.status(403).json({ success: false, message: 'Invalid credentials' });
     }
 
     let profile = null;
@@ -245,6 +249,60 @@ router.get('/me', authMiddleware, (req, res) => {
   } catch (err) {
     console.error('Get me error:', err);
     res.status(500).json({ success: false, message: 'Failed to get user' });
+  }
+});
+
+// PUT /api/auth/name — update display name (role-aware)
+router.put('/name', authMiddleware, (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ success: false, message: 'Name is required' });
+    if (req.user.role === 'candidate') {
+      db.prepare('UPDATE candidate_profiles SET full_name = ? WHERE user_id = ?').run(name.trim(), req.user.id);
+    } else if (req.user.role === 'employer') {
+      db.prepare('UPDATE employer_profiles SET company_name = ? WHERE user_id = ?').run(name.trim(), req.user.id);
+    }
+    res.json({ success: true, message: 'Name updated' });
+  } catch (err) {
+    console.error('Update name error:', err);
+    res.status(500).json({ success: false, message: 'Failed to update name' });
+  }
+});
+
+// PUT /api/auth/email — change email (requires current password)
+router.put('/email', authMiddleware, (req, res) => {
+  try {
+    const { newEmail, currentPassword } = req.body;
+    if (!newEmail || !currentPassword) return res.status(400).json({ success: false, message: 'New email and current password are required' });
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+    if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+    const exists = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(newEmail, req.user.id);
+    if (exists) return res.status(409).json({ success: false, message: 'That email is already in use' });
+    db.prepare('UPDATE users SET email = ? WHERE id = ?').run(newEmail, req.user.id);
+    res.json({ success: true, message: 'Email updated' });
+  } catch (err) {
+    console.error('Update email error:', err);
+    res.status(500).json({ success: false, message: 'Failed to update email' });
+  }
+});
+
+// POST /api/auth/change-password — change password (requires current password)
+router.post('/change-password', authMiddleware, (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ success: false, message: 'Current and new password are required' });
+    if (newPassword.length < 6) return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+    if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(bcrypt.hashSync(newPassword, 10), req.user.id);
+    res.json({ success: true, message: 'Password changed' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ success: false, message: 'Failed to change password' });
   }
 });
 
