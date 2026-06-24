@@ -16,7 +16,7 @@
     <link rel="canonical" href="https://switchera.in/" />
 
     <!-- PWA (installable app) -->
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -78,15 +78,24 @@
           navigator.serviceWorker.register('/sw.js').catch(function () {});
         });
       }
-      // Count an app "download" when the user installs the PWA (shared with web admin)
-      window.addEventListener('appinstalled', function () {
+      // Count an app "download" once per device, across all platforms.
+      function trackInstall() {
         try {
+          if (localStorage.getItem('switchera_installed')) return;
+          localStorage.setItem('switchera_installed', '1');
           fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ event_type: 'app_download', path: '/' })
           }).catch(function () {});
         } catch (e) {}
+      }
+      // Android / desktop Chrome: fires at install time
+      window.addEventListener('appinstalled', trackInstall);
+      // iPhone (and any platform): if opened as an installed app, count it once
+      window.addEventListener('load', function () {
+        var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (standalone) trackInstall();
       });
     </script>
   </body>
