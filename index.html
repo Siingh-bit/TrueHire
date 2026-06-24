@@ -15,6 +15,14 @@
     <meta name="theme-color" content="#2d79f2" />
     <link rel="canonical" href="https://switchera.in/" />
 
+    <!-- PWA (installable app) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Switchera" />
+
     <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://switchera.in/" />
@@ -63,5 +71,23 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Register service worker (enables install + offline)
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+      // Count an app "download" when the user installs the PWA (shared with web admin)
+      window.addEventListener('appinstalled', function () {
+        try {
+          fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_type: 'app_download', path: '/' })
+          }).catch(function () {});
+        } catch (e) {}
+      });
+    </script>
   </body>
 </html>
