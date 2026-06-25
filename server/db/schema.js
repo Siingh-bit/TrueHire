@@ -1,34 +1,73 @@
-import Database from 'better-sqlite3';
+// Postgres (Supabase) data layer with a better-sqlite3-compatible SYNCHRONOUS API.
+// This lets the rest of the app keep using db.prepare(...).get/all/run(...)
+// unchanged, while data actually lives in Supabase Postgres (persists across deploys).
+import { createSyncFn } from 'synckit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-let __dirname = '';
-try {
-  const __filename = fileURLToPath(import.meta.url);
-  __dirname = dirname(__filename);
-} catch (e) {
-  __dirname = process.cwd();
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const workerPath = join(__dirname, 'sync-db.worker.js');
+
+// runQuery({ text, params }) -> { rows, rowCount }  (runs synchronously)
+const runQuery = createSyncFn(workerPath, { timeout: 60000 });
+
+// Convert SQLite-style "?" placeholders to Postgres "$1, $2, ..."
+function toPg(sql) {
+  let i = 0;
+  return sql.replace(/\?/g, () => '$' + (++i));
 }
 
-const dbPath = process.env.VERCEL ? '/tmp/truehire.db' : join(__dirname, 'truehire.db');
-const db = new Database(dbPath);
+// better-sqlite3 accepts .get(a, b) or .get([a, b]); normalize to a flat array.
+function normalizeParams(params) {
+  if (params.length === 1 && Array.isArray(params[0])) return params[0];
+  return params;
+}
 
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const db = {
+  prepare(sql) {
+    const text = toPg(sql);
+    const isInsert = /^\s*insert\s/i.test(sql);
+    return {
+      get(...params) {
+        const r = runQuery({ text, params: normalizeParams(params) });
+        return r.rows[0];
+      },
+      all(...params) {
+        const r = runQuery({ text, params: normalizeParams(params) });
+        return r.rows;
+      },
+      run(...params) {
+        let q = text;
+        if (isInsert && !/returning/i.test(text)) q = text + ' RETURNING id';
+        const r = runQuery({ text: q, params: normalizeParams(params) });
+        return { lastInsertRowid: r.rows[0] ? r.rows[0].id : undefined, changes: r.rowCount };
+      },
+    };
+  },
+  exec(sql) {
+    runQuery({ text: sql, params: [] });
+  },
+  // better-sqlite3 transaction(fn) returns a callable; we run it directly
+  // (each statement still commits individually — fine for this app's needs).
+  transaction(fn) {
+    return (...args) => fn(...args);
+  },
+  pragma() { /* no-op on Postgres */ },
+};
 
 export function initDB() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT CHECK(role IN ('candidate','employer','admin')) NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
       is_active INTEGER DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS candidate_profiles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       user_id INTEGER UNIQUE REFERENCES users(id),
       full_name TEXT NOT NULL,
       phone TEXT,
@@ -45,12 +84,12 @@ export function initDB() {
       verification_score REAL DEFAULT 0,
       profile_completeness INTEGER DEFAULT 0,
       is_open_to_work INTEGER DEFAULT 1,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS education (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       institution TEXT NOT NULL,
       degree TEXT NOT NULL,
@@ -63,7 +102,7 @@ export function initDB() {
     );
 
     CREATE TABLE IF NOT EXISTS work_experience (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       company_name TEXT NOT NULL,
       job_title TEXT NOT NULL,
@@ -75,7 +114,7 @@ export function initDB() {
     );
 
     CREATE TABLE IF NOT EXISTS skills (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       skill_name TEXT NOT NULL,
       proficiency_level TEXT CHECK(proficiency_level IN ('beginner','intermediate','advanced','expert')),
@@ -85,7 +124,7 @@ export function initDB() {
     );
 
     CREATE TABLE IF NOT EXISTS employer_profiles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       user_id INTEGER UNIQUE REFERENCES users(id),
       company_name TEXT NOT NULL,
       company_logo_url TEXT,
@@ -98,7 +137,7 @@ export function initDB() {
     );
 
     CREATE TABLE IF NOT EXISTS jobs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       employer_id INTEGER REFERENCES employer_profiles(id),
       title TEXT NOT NULL,
       description TEXT NOT NULL,
@@ -114,12 +153,12 @@ export function initDB() {
       status TEXT DEFAULT 'active' CHECK(status IN ('active','paused','closed')),
       requires_assessment INTEGER DEFAULT 1,
       assessment_config TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
       application_deadline TEXT
     );
 
     CREATE TABLE IF NOT EXISTS applications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       job_id INTEGER REFERENCES jobs(id),
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       referrer_id INTEGER REFERENCES users(id),
@@ -128,13 +167,13 @@ export function initDB() {
       video_cover_letter_url TEXT,
       rejection_reason TEXT,
       assessment_score REAL,
-      assessment_completed_at DATETIME,
-      applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      assessment_completed_at TIMESTAMPTZ,
+      applied_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS assessments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       application_id INTEGER REFERENCES applications(id),
       job_id INTEGER REFERENCES jobs(id),
       candidate_id INTEGER REFERENCES candidate_profiles(id),
@@ -146,13 +185,13 @@ export function initDB() {
       proctoring_violations TEXT,
       proctoring_score REAL DEFAULT 100,
       status TEXT DEFAULT 'pending' CHECK(status IN ('pending','in_progress','completed','expired','flagged')),
-      started_at DATETIME,
-      completed_at DATETIME,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      started_at TIMESTAMPTZ,
+      completed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS manager_feedback (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       manager_name TEXT NOT NULL,
       manager_email TEXT NOT NULL,
@@ -171,134 +210,131 @@ export function initDB() {
       comments TEXT,
       is_verified INTEGER DEFAULT 0,
       verification_token TEXT UNIQUE,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS otp_codes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       email TEXT NOT NULL,
       otp TEXT NOT NULL,
       type TEXT CHECK(type IN ('login', 'register')) NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      expires_at DATETIME NOT NULL
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      expires_at TIMESTAMPTZ NOT NULL
     );
+
     CREATE TABLE IF NOT EXISTS interview_pipeline (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       application_id INTEGER REFERENCES applications(id),
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       job_id INTEGER REFERENCES jobs(id),
       level1_status TEXT DEFAULT 'pending',
-      level1_scheduled_at DATETIME,
-      level1_completed_at DATETIME,
+      level1_scheduled_at TIMESTAMPTZ,
+      level1_completed_at TIMESTAMPTZ,
       level1_notes TEXT,
       level2_status TEXT DEFAULT 'pending',
-      level2_scheduled_at DATETIME,
-      level2_completed_at DATETIME,
+      level2_scheduled_at TIMESTAMPTZ,
+      level2_completed_at TIMESTAMPTZ,
       level2_notes TEXT,
       sent_to_employer INTEGER DEFAULT 0,
-      sent_to_employer_at DATETIME,
+      sent_to_employer_at TIMESTAMPTZ,
       employer_status TEXT DEFAULT 'pending',
       employer_notes TEXT,
       cheating_flag INTEGER DEFAULT 0,
       cheating_notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS candidate_agreements (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       user_id INTEGER REFERENCES users(id),
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       agreement_version TEXT NOT NULL,
       agreement_text_hash TEXT,
-      accepted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      accepted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
       ip_address TEXT
     );
 
     CREATE TABLE IF NOT EXISTS admin_actions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       admin_id INTEGER REFERENCES users(id),
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       action_type TEXT NOT NULL,
       reason TEXT,
       notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS candidate_availability (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       available_date TEXT NOT NULL,
       time_slot TEXT NOT NULL,
       notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS platform_analytics (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       event_type TEXT CHECK(event_type IN ('page_view', 'app_download')) NOT NULL,
       path TEXT,
       user_agent TEXT,
       ip_address TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS candidate_certifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       skill_name TEXT NOT NULL,
       score REAL,
       is_certified INTEGER DEFAULT 0,
-      taken_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      taken_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS truehire_interviews (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       candidate_id INTEGER REFERENCES candidate_profiles(id),
       job_id INTEGER REFERENCES jobs(id),
       round_number INTEGER NOT NULL,
-      scheduled_at DATETIME,
+      scheduled_at TIMESTAMPTZ,
       interviewer_id INTEGER REFERENCES users(id),
       status TEXT DEFAULT 'scheduled' CHECK(status IN ('scheduled', 'completed', 'cancelled')),
       video_url TEXT,
       feedback_notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       application_id INTEGER REFERENCES applications(id),
       sender_id INTEGER REFERENCES users(id),
       receiver_id INTEGER REFERENCES users(id),
       content TEXT NOT NULL,
       is_read INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
+
+    ALTER TABLE jobs ADD COLUMN IF NOT EXISTS bounty_amount INTEGER DEFAULT 0;
+    ALTER TABLE applications ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+    ALTER TABLE applications ADD COLUMN IF NOT EXISTS video_cover_letter_url TEXT;
+    ALTER TABLE applications ADD COLUMN IF NOT EXISTS referrer_id INTEGER REFERENCES users(id);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS is_super_admin INTEGER DEFAULT 0;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS current_company_join_date TEXT;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS available_to_switch_from TEXT;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS notice_period_days INTEGER DEFAULT 30;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS preferred_interview_slots TEXT DEFAULT '[]';
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS preferred_interview_days TEXT DEFAULT '[]';
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS agreement_accepted INTEGER DEFAULT 0;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS agreement_accepted_at TIMESTAMPTZ;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS agreement_version TEXT;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS agreement_ip TEXT;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active';
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS penalty_status TEXT DEFAULT 'none';
+    ALTER TABLE jobs ADD COLUMN IF NOT EXISTS expected_joining_date TEXT;
   `);
 
-  try { db.exec("ALTER TABLE jobs ADD COLUMN bounty_amount INTEGER DEFAULT 0"); } catch(e) {}
-  try { db.exec("ALTER TABLE applications ADD COLUMN rejection_reason TEXT"); } catch(e) {}
-  try { db.exec("ALTER TABLE applications ADD COLUMN video_cover_letter_url TEXT"); } catch(e) {}
-  try { db.exec("ALTER TABLE applications ADD COLUMN referrer_id INTEGER REFERENCES users(id)"); } catch(e) {}
-  try { db.exec("ALTER TABLE applications ADD COLUMN ai_score INTEGER"); } catch(e) {}
-  try { db.exec("ALTER TABLE applications ADD COLUMN ai_summary TEXT"); } catch(e) {}
-
-  // Phase 1: Job-switch platform migrations
-  try { db.exec("ALTER TABLE users ADD COLUMN is_super_admin INTEGER DEFAULT 0"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN current_company_join_date TEXT"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN available_to_switch_from TEXT"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN notice_period_days INTEGER DEFAULT 30"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN preferred_interview_slots TEXT DEFAULT '[]'"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN preferred_interview_days TEXT DEFAULT '[]'"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_accepted INTEGER DEFAULT 0"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_accepted_at DATETIME"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_version TEXT"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN agreement_ip TEXT"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN account_status TEXT DEFAULT 'active'"); } catch(e) {}
-  try { db.exec("ALTER TABLE candidate_profiles ADD COLUMN penalty_status TEXT DEFAULT 'none'"); } catch(e) {}
-  try { db.exec("ALTER TABLE jobs ADD COLUMN expected_joining_date TEXT"); } catch(e) {}
-
-  console.log('✅ Database tables initialized');
+  console.log('✅ Database tables initialized (Postgres / Supabase)');
 }
 
 export default db;

@@ -74,7 +74,7 @@ router.get('/matching-candidates/:jobId', authMiddleware, (req, res) => {
     // Get all open candidates with their skills
     const candidates = db.prepare(`
       SELECT cp.*, u.email,
-        GROUP_CONCAT(DISTINCT s.skill_name) as skill_list
+        string_agg(DISTINCT s.skill_name, ',') as skill_list
       FROM candidate_profiles cp
       JOIN users u ON cp.user_id = u.id
       LEFT JOIN skills s ON s.candidate_id = cp.id
@@ -82,7 +82,7 @@ router.get('/matching-candidates/:jobId', authMiddleware, (req, res) => {
         AND cp.account_status = 'active'
         AND cp.total_experience_years >= ?
         AND (cp.total_experience_years <= ? OR ? IS NULL)
-      GROUP BY cp.id
+      GROUP BY cp.id, u.email
     `).all(job.min_experience_years || 0, job.max_experience_years || 99, job.max_experience_years);
 
     // Score each candidate

@@ -83,7 +83,7 @@ import { Server } from 'socket.io';
 // Initialize and start
 try {
   initDB();
-  if (process.env.NODE_ENV !== 'production' || process.env.SEED_DEMO === 'true') {
+  if (process.env.SEED_DEMO === 'true') {
     seedDB();
   }
   ensureAdmin();

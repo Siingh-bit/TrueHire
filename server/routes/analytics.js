@@ -75,7 +75,7 @@ router.get('/employer', authMiddleware, (req, res) => {
     // Average time to hire (for 'hired' candidates)
     // JulianDay differences give days. 
     const timeToHireRow = db.prepare(`
-      SELECT AVG(julianday(a.updated_at) - julianday(a.applied_at)) as avg_days
+      SELECT AVG(EXTRACT(EPOCH FROM (a.updated_at - a.applied_at)) / 86400.0) as avg_days
       FROM applications a
       JOIN jobs j ON a.job_id = j.id
       WHERE j.employer_id = ? AND a.status = 'hired'
