@@ -332,6 +332,8 @@ export function initDB() {
     ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active';
     ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS penalty_status TEXT DEFAULT 'none';
     ALTER TABLE jobs ADD COLUMN IF NOT EXISTS expected_joining_date TEXT;
+    ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS work_preferences TEXT DEFAULT '[]';
+    ALTER TABLE jobs ADD COLUMN IF NOT EXISTS work_types TEXT DEFAULT '[]';
   `);
 
   console.log('✅ Database tables initialized (Postgres / Supabase)');

@@ -23,6 +23,8 @@ export default function Candidates() {
     try {
       if (modal.type === 'ban') {
         await api.updateAccountStatus(modal.candidateId, 'perm_banned', modal.notes);
+      } else if (modal.type === 'temp_ban') {
+        await api.updateAccountStatus(modal.candidateId, 'temp_banned', modal.notes);
       } else if (modal.type === 'warn') {
         await api.updateAccountStatus(modal.candidateId, 'warned', modal.notes);
       } else if (modal.type === 'unban') {
@@ -105,7 +107,8 @@ export default function Candidates() {
                         ) : (
                           <>
                             <button className="admin__btn admin__btn--warning" onClick={() => setModal({ show: true, candidateId: c.id, type: 'warn', notes: '' })}>Warn</button>
-                            <button className="admin__btn admin__btn--danger" onClick={() => setModal({ show: true, candidateId: c.id, type: 'ban', notes: '' })}>Ban</button>
+                            <button className="admin__btn admin__btn--warning" onClick={() => setModal({ show: true, candidateId: c.id, type: 'temp_ban', notes: '' })}>Temp Ban</button>
+                            <button className="admin__btn admin__btn--danger" onClick={() => setModal({ show: true, candidateId: c.id, type: 'ban', notes: '' })}>Perm Ban</button>
                           </>
                         )}
                         {c.cheating_flag ? (

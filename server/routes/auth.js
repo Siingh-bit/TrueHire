@@ -250,6 +250,15 @@ router.post('/login', authLimiter, (req, res) => {
       return res.status(403).json({ success: false, message: 'Invalid credentials' });
     }
 
+    // Block banned candidates from logging in.
+    if (user.role === 'candidate') {
+      const cp = db.prepare('SELECT account_status FROM candidate_profiles WHERE user_id = ?').get(user.id);
+      if (cp && (cp.account_status === 'temp_banned' || cp.account_status === 'perm_banned')) {
+        const kind = cp.account_status === 'perm_banned' ? 'permanently' : 'temporarily';
+        return res.status(403).json({ success: false, message: `Your account has been ${kind} banned. Please contact Switchera support at switcherasupport@gmail.com.` });
+      }
+    }
+
     let profile = null;
     if (user.role === 'candidate') {
       profile = db.prepare('SELECT * FROM candidate_profiles WHERE user_id = ?').get(user.id);

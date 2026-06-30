@@ -153,17 +153,18 @@ router.post('/', authMiddleware, (req, res) => {
     const profile = db.prepare('SELECT id FROM employer_profiles WHERE user_id = ?').get(req.user.id);
     if (!profile) return res.status(404).json({ success: false, message: 'Employer profile not found' });
 
-    const { title, description, required_skills, preferred_skills, min_experience_years = 3, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment = true, assessment_config, application_deadline, expected_joining_date } = req.body;
+    const { title, description, required_skills, preferred_skills, min_experience_years = 3, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, work_types, requires_assessment = true, assessment_config, application_deadline, expected_joining_date } = req.body;
 
     if (!title || !description || !required_skills) {
       return res.status(400).json({ success: false, message: 'Title, description, and required skills are required' });
     }
 
-    const result = db.prepare(`INSERT INTO jobs (employer_id, title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, requires_assessment, assessment_config, application_deadline, expected_joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    const result = db.prepare(`INSERT INTO jobs (employer_id, title, description, required_skills, preferred_skills, min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount, location, job_type, work_types, requires_assessment, assessment_config, application_deadline, expected_joining_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       profile.id, title, description,
       JSON.stringify(required_skills),
       JSON.stringify(preferred_skills || []),
       min_experience_years, max_experience_years, salary_min, salary_max, bounty_amount || 0, location, job_type,
+      JSON.stringify(work_types || []),
       requires_assessment ? 1 : 0,
       assessment_config ? JSON.stringify(assessment_config) : null,
       application_deadline, expected_joining_date || null

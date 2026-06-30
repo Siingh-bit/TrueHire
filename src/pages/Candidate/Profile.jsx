@@ -131,7 +131,7 @@ export default function CandidateProfile() {
   useEffect(() => {
     if (candidate) {
       if (activeTab === 'personal') {
-        setFormData({ full_name: candidate.full_name, phone: candidate.phone, headline: candidate.headline, summary: candidate.summary, current_location: candidate.current_location, expected_salary_min: candidate.expected_salary_min, expected_salary_max: candidate.expected_salary_max, is_open_to_work: candidate.is_open_to_work });
+        setFormData({ full_name: candidate.full_name, phone: candidate.phone, headline: candidate.headline, summary: candidate.summary, current_location: candidate.current_location, expected_salary_min: candidate.expected_salary_min, expected_salary_max: candidate.expected_salary_max, is_open_to_work: candidate.is_open_to_work, work_preferences: candidate.work_preferences ? JSON.parse(candidate.work_preferences) : [] });
       } else if (activeTab === 'switch plan') {
         setFormData({
           current_company_join_date: candidate.current_company_join_date,
@@ -176,6 +176,22 @@ export default function CandidateProfile() {
             </div>
             <div className="auth-field"><label>Professional Headline</label><input type="text" value={formData.headline || ''} onChange={e => setFormData({...formData, headline: e.target.value})} /></div>
             <div className="auth-field"><label>Summary</label><textarea rows={4} value={formData.summary || ''} onChange={e => setFormData({...formData, summary: e.target.value})} style={{ resize: 'vertical' }} /></div>
+            <div className="auth-field">
+              <label>What are you looking for? (select up to 2)</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+                {[{ value: 'full-time', label: 'Full-time' }, { value: 'part-time', label: 'Part-time' }, { value: 'internship', label: 'Internship' }, { value: 'freelance', label: 'Freelance' }, { value: 'contract', label: 'Contract' }].map(opt => {
+                  const sel = (formData.work_preferences || []).includes(opt.value);
+                  return (
+                    <button type="button" key={opt.value} className={`btn ${sel ? 'btn--primary' : 'btn--secondary'}`} onClick={() => {
+                      const cur = formData.work_preferences || [];
+                      if (sel) setFormData({ ...formData, work_preferences: cur.filter(v => v !== opt.value) });
+                      else if (cur.length < 2) setFormData({ ...formData, work_preferences: [...cur, opt.value] });
+                      else { setMessage('You can select up to 2 options.'); setTimeout(() => setMessage(''), 2500); }
+                    }}>{opt.label}</button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="auth-row">
               <div className="auth-field"><label>Current Location</label><input type="text" value={formData.current_location || ''} onChange={e => setFormData({...formData, current_location: e.target.value})} /></div>
               <div className="auth-field"><label>Open to Work</label><select value={formData.is_open_to_work ? '1' : '0'} onChange={e => setFormData({...formData, is_open_to_work: e.target.value === '1' ? 1 : 0})}><option value="1">Yes</option><option value="0">No</option></select></div>

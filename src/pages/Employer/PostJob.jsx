@@ -7,7 +7,7 @@ const COMMON_SKILLS = ['JavaScript','Python','Java','React','Node.js','SQL','AWS
 
 export default function PostJob() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ title: '', description: '', required_skills: [], preferred_skills: [], min_experience_years: 3, max_experience_years: 10, salary_min: '', salary_max: '', bounty_amount: '', location: '', job_type: 'full-time', requires_assessment: true, assessment_config: { difficulty: 'medium', duration: 45 }, application_deadline: '', expected_joining_date: '' });
+  const [formData, setFormData] = useState({ title: '', description: '', required_skills: [], preferred_skills: [], min_experience_years: 3, max_experience_years: 10, salary_min: '', salary_max: '', bounty_amount: '', location: '', job_type: 'full-time', work_types: [], requires_assessment: true, assessment_config: { difficulty: 'medium', duration: 45 }, application_deadline: '', expected_joining_date: '' });
   const [skillInput, setSkillInput] = useState('');
   const [prefSkillInput, setPrefSkillInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -63,6 +63,21 @@ export default function PostJob() {
           <div className="auth-row">
             <div className="auth-field"><label>Job Type *</label><select value={formData.job_type} onChange={e => update('job_type', e.target.value)}><option value="full-time">Full-time</option><option value="part-time">Part-time</option><option value="contract">Contract</option><option value="remote">Remote</option></select></div>
             <div className="auth-field"><label>Location *</label><input required value={formData.location} onChange={e => update('location', e.target.value)} placeholder="e.g. Bangalore, India" /></div>
+          </div>
+
+          <div className="auth-field">
+            <label>Engagement Type (select any that apply)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              {[{ value: 'full-time', label: 'Full-time' }, { value: 'part-time', label: 'Part-time' }, { value: 'internship', label: 'Internship' }, { value: 'freelance', label: 'Freelance' }, { value: 'contract', label: 'Contract' }].map(opt => {
+                const sel = (formData.work_types || []).includes(opt.value);
+                return (
+                  <button type="button" key={opt.value} className={`btn ${sel ? 'btn--primary' : 'btn--secondary'}`} onClick={() => {
+                    const cur = formData.work_types || [];
+                    update('work_types', sel ? cur.filter(v => v !== opt.value) : [...cur, opt.value]);
+                  }}>{opt.label}</button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="auth-row">

@@ -279,12 +279,14 @@ router.put('/profile', authMiddleware, (req, res) => {
     const profile = db.prepare('SELECT * FROM candidate_profiles WHERE user_id = ?').get(req.user.id);
     if (!profile) return res.status(404).json({ success: false, message: 'Profile not found' });
 
-    const { full_name, phone, headline, summary, current_location, preferred_locations, expected_salary_min, expected_salary_max, is_open_to_work } = req.body;
+    const { full_name, phone, headline, summary, current_location, preferred_locations, expected_salary_min, expected_salary_max, is_open_to_work, work_preferences } = req.body;
 
-    db.prepare(`UPDATE candidate_profiles SET full_name = COALESCE(?, full_name), phone = COALESCE(?, phone), headline = COALESCE(?, headline), summary = COALESCE(?, summary), current_location = COALESCE(?, current_location), preferred_locations = COALESCE(?, preferred_locations), expected_salary_min = COALESCE(?, expected_salary_min), expected_salary_max = COALESCE(?, expected_salary_max), is_open_to_work = COALESCE(?, is_open_to_work), updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(
+    db.prepare(`UPDATE candidate_profiles SET full_name = COALESCE(?, full_name), phone = COALESCE(?, phone), headline = COALESCE(?, headline), summary = COALESCE(?, summary), current_location = COALESCE(?, current_location), preferred_locations = COALESCE(?, preferred_locations), expected_salary_min = COALESCE(?, expected_salary_min), expected_salary_max = COALESCE(?, expected_salary_max), is_open_to_work = COALESCE(?, is_open_to_work), work_preferences = COALESCE(?, work_preferences), updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(
       full_name, phone, headline, summary, current_location,
       preferred_locations ? JSON.stringify(preferred_locations) : null,
-      expected_salary_min, expected_salary_max, is_open_to_work, profile.id
+      expected_salary_min, expected_salary_max, is_open_to_work,
+      work_preferences ? JSON.stringify(work_preferences) : null,
+      profile.id
     );
 
     const updated = db.prepare('SELECT * FROM candidate_profiles WHERE id = ?').get(profile.id);
