@@ -50,8 +50,45 @@ router.post('/send-otp', authLimiter, async (req, res) => {
     const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production';
     let fallbackToDevMode = false;
 
+    // Brevo HTTP API (sends over HTTPS — not blocked by SMTP port restrictions)
+    if (process.env.BREVO_API_KEY) {
+      try {
+        const brevoRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': process.env.BREVO_API_KEY.trim(),
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: { name: 'Switchera', email: process.env.EMAIL_FROM },
+            to: [{ email }],
+            subject: 'Your Switchera Verification Code',
+            htmlContent: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                <h2 style="color: #2d79f2; text-align: center;">Switchera Account Verification</h2>
+                <p>Hello,</p>
+                <p>Use the following 6-digit code to verify your email address:</p>
+                <div style="background-color: #f4f7f6; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; border-radius: 4px; margin: 20px 0;">
+                  ${otp}
+                </div>
+                <p style="color: #666; font-size: 14px;">This code expires in 10 minutes.</p>
+                <p style="margin-top: 30px; font-size: 14px; color: #999; text-align: center;">&copy; ${new Date().getFullYear()} Switchera. All rights reserved.</p>
+              </div>
+            `,
+          }),
+        });
+        if (!brevoRes.ok) {
+          const errData = await brevoRes.json().catch(() => ({}));
+          throw new Error(errData.message || ('Brevo API error ' + brevoRes.status));
+        }
+      } catch (apiErr) {
+        console.error('Brevo send error:', apiErr);
+        return res.status(500).json({ success: false, message: 'Failed to send verification email. Please try again.' });
+      }
+    }
     // HTTP Email API (Bypasses Render's SMTP Firewall)
-    if (process.env.RESEND_API_KEY) {
+    else if (process.env.RESEND_API_KEY) {
       try {
         const resendRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -110,7 +147,7 @@ router.post('/send-otp', authLimiter, async (req, res) => {
     res.json({ 
       success: true, 
       message: 'OTP processed', 
-      devOtp: (isDev || fallbackToDevMode) ? otp : undefined 
+      devOtp: fallbackToDevMode ? otp : undefined
     });
   } catch (err) {
     console.error('Send OTP error:', err);
