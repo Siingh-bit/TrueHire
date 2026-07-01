@@ -45,7 +45,7 @@ export default function SubmitFeedback() {
       <label>{label}: <strong>{formData[field]}/5</strong></label>
       <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
         {[1,2,3,4,5].map(n => (
-          <button key={n} type="button" onClick={() => setFormData({...formData, [field]: n})} style={{ flex: 1, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: `2px solid ${formData[field] === n ? 'var(--color-primary-500)' : 'var(--color-border-primary)'}`, background: formData[field] === n ? 'rgba(45,121,242,0.15)' : 'transparent', color: formData[field] === n ? 'var(--color-primary-400)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--font-size-sm)', transition: 'all 0.2s' }}>
+          <button key={n} type="button" onClick={() => setFormData({...formData, [field]: n})} style={{ flex: 1, padding: 'var(--space-2)', borderRadius: 'var(--radius-md)', border: `2px solid ${formData[field] === n ? 'var(--color-primary-500)' : 'var(--color-border-primary)'}`, background: formData[field] === n ? 'rgba(18, 168, 102,0.15)' : 'transparent', color: formData[field] === n ? 'var(--color-primary-400)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--font-size-sm)', transition: 'all 0.2s' }}>
             {n} {'⭐'.repeat(n > 3 ? 1 : 0)}
           </button>
         ))}

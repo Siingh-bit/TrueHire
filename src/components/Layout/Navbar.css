@@ -9,7 +9,7 @@
 }
 
 .navbar--scrolled {
-  background: rgba(10, 14, 26, 0.85);
+  background: rgba(11, 17, 14, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--color-border-primary);
@@ -169,7 +169,7 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--color-primary-400);
-  background: rgba(45, 121, 242, 0.1);
+  background: rgba(18, 168, 102, 0.1);
   border-radius: var(--radius-full);
   text-transform: capitalize;
 }

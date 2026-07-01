@@ -116,7 +116,7 @@ export default function Applicants() {
 
               {/* AI Summary */}
               {app.ai_summary && (
-                <div style={{ marginTop: 'var(--space-3)', background: 'rgba(45, 121, 242, 0.05)', border: '1px solid rgba(45, 121, 242, 0.2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ marginTop: 'var(--space-3)', background: 'rgba(18, 168, 102, 0.05)', border: '1px solid rgba(18, 168, 102, 0.2)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                     <span style={{ fontSize: '1.2rem' }}>🤖</span>
                     <span style={{ fontWeight: 600, color: 'var(--color-primary-400)', fontSize: 'var(--font-size-sm)' }}>AI Analysis</span>
@@ -130,7 +130,7 @@ export default function Applicants() {
               {/* Skills */}
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: 'var(--space-3)' }}>
                 {app.skills?.slice(0, 8).map(s => (
-                  <span key={s.id} className="skill-tag" style={s.is_verified ? { borderColor: 'var(--color-accent-400)', background: 'rgba(0,217,148,0.1)' } : {}}>
+                  <span key={s.id} className="skill-tag" style={s.is_verified ? { borderColor: 'var(--color-accent-400)', background: 'rgba(232, 181, 63,0.1)' } : {}}>
                     {s.skill_name} {s.is_verified && '✓'}
                     {s.assessment_score && <span style={{ marginLeft: '4px', opacity: 0.7 }}>{s.assessment_score}%</span>}
                   </span>

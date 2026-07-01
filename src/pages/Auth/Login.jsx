@@ -46,7 +46,7 @@ export default function Login() {
       <div className="auth-card animate-fade-in-up">
         <div className="auth-card__header">
           <Link to="/" className="auth-card__logo">
-            <svg width="40" height="40" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#lg)" /><path d="M8 16L13 21L24 10" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /><defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop stopColor="#2d79f2" /><stop offset="1" stopColor="#8b2dff" /></linearGradient></defs></svg>
+            <svg width="40" height="40" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#lg)" /><path d="M8 16L13 21L24 10" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /><defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop stopColor="#12a866" /><stop offset="1" stopColor="#12a99b" /></linearGradient></defs></svg>
           </Link>
           <h1 className="auth-card__title">Welcome Back</h1>
           <p className="auth-card__subtitle">Sign in to your Switchera account</p>

@@ -49,7 +49,7 @@ export default function SettingsModal({ onClose }) {
   const sectionTitle = { marginBottom: 'var(--space-3)', color: 'var(--color-text-secondary)' };
 
   const colors = [
-    { id: 'blue', label: 'Navy Blue', hex: '#2d79f2' },
+    { id: 'blue', label: 'Navy Blue', hex: '#12a866' },
     { id: 'purple', label: 'Purple', hex: '#a855f7' },
     { id: 'green', label: 'Green', hex: '#22c55e' },
     { id: 'teal', label: 'Teal', hex: '#14b8a6' },

@@ -102,7 +102,7 @@ export default function Landing() {
           <div style={{ maxWidth: '780px', margin: '0 auto', textAlign: 'center', background: 'var(--gradient-card)', padding: 'var(--space-10) var(--space-8)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--color-border-primary)' }}>
             
             <div>
-              <div style={{ display: 'inline-block', padding: '4px 12px', background: 'rgba(45,121,242,0.1)', color: 'var(--color-primary-400)', borderRadius: '100px', fontSize: 'var(--font-size-sm)', fontWeight: 600, marginBottom: 'var(--space-4)' }}>
+              <div style={{ display: 'inline-block', padding: '4px 12px', background: 'rgba(18, 168, 102,0.1)', color: 'var(--color-primary-400)', borderRadius: '100px', fontSize: 'var(--font-size-sm)', fontWeight: 600, marginBottom: 'var(--space-4)' }}>
                 MEET THE FOUNDER
               </div>
               <h2 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, marginBottom: 'var(--space-2)' }}>Nishal Singh</h2>

@@ -154,7 +154,7 @@ export default function CandidateProfile() {
         <p className="dashboard__subtitle">Manage your professional information</p>
       </div>
 
-      {message && <div style={{ padding: 'var(--space-3) var(--space-4)', background: message.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(0,217,148,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', color: message.startsWith('Error') ? 'var(--color-danger-400)' : 'var(--color-accent-400)', fontSize: 'var(--font-size-sm)' }}>{message}</div>}
+      {message && <div style={{ padding: 'var(--space-3) var(--space-4)', background: message.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(232, 181, 63,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', color: message.startsWith('Error') ? 'var(--color-danger-400)' : 'var(--color-accent-400)', fontSize: 'var(--font-size-sm)' }}>{message}</div>}
 
       <div className="tabs">
         {['personal', 'switch plan', 'education', 'experience', 'skills'].map(t => (
@@ -207,7 +207,7 @@ export default function CandidateProfile() {
 
       {activeTab === 'switch plan' && (
         <div className="card" style={{ padding: 'var(--space-8)' }}>
-          <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'rgba(45,121,242,0.1)', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'rgba(18, 168, 102,0.1)', borderRadius: 'var(--radius-md)' }}>
             <h3 style={{ marginBottom: 'var(--space-2)', color: 'var(--color-primary-400)' }}>Seamless Job Switch Planning</h3>
             <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>Configure your availability to help Switchera schedule your Level 1 & Level 2 interviews smoothly around your current job, and set your expected joining date for potential employers.</p>
           </div>

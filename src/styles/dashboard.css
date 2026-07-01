@@ -72,9 +72,9 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
 }
-.badge--primary { background: rgba(45,121,242,0.15); color: var(--color-primary-400); }
-.badge--accent { background: rgba(0,217,148,0.15); color: var(--color-accent-400); }
-.badge--secondary { background: rgba(139,45,255,0.15); color: var(--color-secondary-400); }
+.badge--primary { background: rgba(18, 168, 102,0.15); color: var(--color-primary-400); }
+.badge--accent { background: rgba(232, 181, 63,0.15); color: var(--color-accent-400); }
+.badge--secondary { background: rgba(18, 169, 155,0.15); color: var(--color-secondary-400); }
 .badge--warning { background: rgba(245,158,11,0.15); color: var(--color-warning-400); }
 .badge--danger { background: rgba(239,68,68,0.15); color: var(--color-danger-400); }
 .badge--success { background: rgba(34,197,94,0.15); color: var(--color-success-400); }
@@ -82,8 +82,8 @@
 
 .skill-tag {
   padding: 3px var(--space-3);
-  background: rgba(45,121,242,0.1);
-  border: 1px solid rgba(45,121,242,0.2);
+  background: rgba(18, 168, 102,0.1);
+  border: 1px solid rgba(18, 168, 102,0.2);
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   color: var(--color-primary-300);
@@ -382,8 +382,8 @@ select.form-control,
   color: var(--color-danger-400);
 }
 .toast--info {
-  background: rgba(45, 121, 242, 0.1);
-  border: 1px solid rgba(45, 121, 242, 0.2);
+  background: rgba(18, 168, 102, 0.1);
+  border: 1px solid rgba(18, 168, 102, 0.2);
   color: var(--color-primary-400);
 }
 

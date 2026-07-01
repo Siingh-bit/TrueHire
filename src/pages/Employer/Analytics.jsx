@@ -4,7 +4,7 @@ import api from '../../api/client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import '../../styles/dashboard.css';
 
-const COLORS = ['#2d79f2', '#00d994', '#ff9800', '#f44336', '#9c27b0'];
+const COLORS = ['#12a866', '#d99a2b', '#ff9800', '#f44336', '#9c27b0'];
 
 export default function EmployerAnalytics() {
   const { profile } = useAuth();

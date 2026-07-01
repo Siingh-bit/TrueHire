@@ -101,13 +101,13 @@
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(45, 121, 242, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(45, 121, 242, 0.5), 0 0 40px rgba(45, 121, 242, 0.2); }
+  0%, 100% { box-shadow: 0 0 5px rgba(18, 168, 102, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(18, 168, 102, 0.5), 0 0 40px rgba(18, 168, 102, 0.2); }
 }
 
 @keyframes glowAccent {
-  0%, 100% { box-shadow: 0 0 5px rgba(0, 217, 148, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(0, 217, 148, 0.5), 0 0 40px rgba(0, 217, 148, 0.2); }
+  0%, 100% { box-shadow: 0 0 5px rgba(232, 181, 63, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(232, 181, 63, 0.5), 0 0 40px rgba(232, 181, 63, 0.2); }
 }
 
 @keyframes shimmer {
@@ -156,10 +156,10 @@
 
 @keyframes borderGlow {
   0%, 100% {
-    border-color: rgba(45, 121, 242, 0.3);
+    border-color: rgba(18, 168, 102, 0.3);
   }
   50% {
-    border-color: rgba(139, 45, 255, 0.5);
+    border-color: rgba(18, 169, 155, 0.5);
   }
 }
 
@@ -167,11 +167,11 @@
 @keyframes verifiedPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(0, 217, 148, 0.4);
+    box-shadow: 0 0 0 0 rgba(232, 181, 63, 0.4);
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 0 0 8px rgba(0, 217, 148, 0);
+    box-shadow: 0 0 0 8px rgba(232, 181, 63, 0);
   }
 }
 

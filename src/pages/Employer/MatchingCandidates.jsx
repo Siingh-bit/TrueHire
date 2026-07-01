@@ -53,7 +53,7 @@ export default function MatchingCandidates() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
                 <h3 style={{ fontSize: '1.2rem', color: 'var(--color-text-primary)', margin: 0 }}>{cand.full_name}</h3>
                 {cand.verification_status === 'verified' && (
-                  <span style={{ fontSize: '0.75rem', background: 'rgba(0,217,148,0.15)', color: '#00d994', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Verified Profile</span>
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(232, 181, 63,0.15)', color: '#d99a2b', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>Verified Profile</span>
                 )}
               </div>
               

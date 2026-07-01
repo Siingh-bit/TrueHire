@@ -120,7 +120,7 @@ export default function PostJob() {
           </div>
 
           {/* Assessment */}
-          <div style={{ padding: 'var(--space-4)', background: 'rgba(45,121,242,0.05)', border: '1px solid rgba(45,121,242,0.15)', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ padding: 'var(--space-4)', background: 'rgba(18, 168, 102,0.05)', border: '1px solid rgba(18, 168, 102,0.15)', borderRadius: 'var(--radius-md)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
               <label style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>🧠 Require AI Assessment</label>
               <button type="button" className={`btn btn--sm ${formData.requires_assessment ? 'btn--primary' : 'btn--secondary'}`} onClick={() => update('requires_assessment', !formData.requires_assessment)}>

@@ -85,7 +85,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-6);
-  background: rgba(10, 14, 26, 0.95);
+  background: rgba(11, 17, 14, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--color-border-primary);
   flex-shrink: 0;
@@ -203,15 +203,15 @@
 
 .assessment-option:hover {
   border-color: var(--color-primary-400);
-  background: rgba(45,121,242,0.05);
+  background: rgba(18, 168, 102,0.05);
   color: var(--color-text-primary);
 }
 
 .assessment-option--selected {
   border-color: var(--color-primary-500);
-  background: rgba(45,121,242,0.1);
+  background: rgba(18, 168, 102,0.1);
   color: var(--color-text-primary);
-  box-shadow: 0 0 20px rgba(45,121,242,0.15);
+  box-shadow: 0 0 20px rgba(18, 168, 102,0.15);
 }
 
 .assessment-option__letter {
@@ -289,7 +289,7 @@
 .assessment-dot--current {
   border-color: var(--color-primary-500);
   background: var(--color-primary-500);
-  box-shadow: 0 0 8px rgba(45,121,242,0.4);
+  box-shadow: 0 0 8px rgba(18, 168, 102,0.4);
 }
 
 .assessment-dot--answered {

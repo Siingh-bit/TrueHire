@@ -42,7 +42,7 @@ export default function JobDetail() {
     <div className="dashboard animate-fade-in-up">
       <button onClick={() => navigate(-1)} className="btn btn--secondary btn--sm" style={{ marginBottom: 'var(--space-4)' }}>← Back</button>
 
-      {message && <div style={{ padding: 'var(--space-3) var(--space-4)', background: message.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(0,217,148,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', color: message.startsWith('Error') ? 'var(--color-danger-400)' : 'var(--color-accent-400)', fontSize: 'var(--font-size-sm)' }}>{message}</div>}
+      {message && <div style={{ padding: 'var(--space-3) var(--space-4)', background: message.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(232, 181, 63,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', color: message.startsWith('Error') ? 'var(--color-danger-400)' : 'var(--color-accent-400)', fontSize: 'var(--font-size-sm)' }}>{message}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--space-6)', alignItems: 'start' }}>
         {/* Main */}
@@ -163,7 +163,7 @@ export default function JobDetail() {
           </div>
 
           {job.bounty_amount > 0 && (
-            <div className="card" style={{ padding: 'var(--space-6)', background: 'rgba(0, 217, 148, 0.05)', border: '1px solid rgba(0, 217, 148, 0.2)' }}>
+            <div className="card" style={{ padding: 'var(--space-6)', background: 'rgba(232, 181, 63, 0.05)', border: '1px solid rgba(232, 181, 63, 0.2)' }}>
               <h3 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-accent-400)' }}>💰 Referral Bounty: ₹{job.bounty_amount}</h3>
               <p style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>Refer a friend. If they get hired, you earn the bounty!</p>
               <button className="btn btn--primary" style={{ width: '100%' }} onClick={() => {

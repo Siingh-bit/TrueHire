@@ -55,7 +55,7 @@ export default function ManageJobs() {
                   <td>{new Date(job.created_at).toLocaleDateString()}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      <Link to={`/employer/jobs/${job.id}/matching`} className="btn btn--secondary btn--sm" style={{ background: 'rgba(0,217,148,0.15)', color: '#00d994', borderColor: 'rgba(0,217,148,0.3)' }}>AI Matches</Link>
+                      <Link to={`/employer/jobs/${job.id}/matching`} className="btn btn--secondary btn--sm" style={{ background: 'rgba(232, 181, 63,0.15)', color: '#d99a2b', borderColor: 'rgba(232, 181, 63,0.3)' }}>AI Matches</Link>
                       <Link to={`/employer/jobs/${job.id}/applicants`} className="btn btn--primary btn--sm">View Applicants</Link>
                       {job.status !== 'closed' && <button className="btn btn--secondary btn--sm" onClick={() => toggleStatus(job)}>{job.status === 'active' ? 'Pause' : 'Resume'}</button>}
                       {job.status !== 'closed' && <button className="btn btn--danger btn--sm" onClick={() => closeJob(job)}>Close</button>}
