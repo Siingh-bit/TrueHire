@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Landing.css';
@@ -6,6 +6,7 @@ import './Landing.css';
 export default function Landing() {
   const { isAuthenticated, isCandidate } = useAuth();
   const observerRef = useRef(null);
+  const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
@@ -122,10 +123,18 @@ export default function Landing() {
                 <a href="#" onClick={(e) => { e.preventDefault(); alert('Reddit coming soon!'); }} className="btn btn--secondary">
                   Reddit
                 </a>
-                <a href="#" onClick={(e) => { e.preventDefault(); alert('Office: 123 Switchera Lane, Tech City\\nPhone: +1 (555) 000-0000'); }} className="btn btn--secondary">
+                <button type="button" onClick={() => setShowContact(v => !v)} className="btn btn--secondary" aria-expanded={showContact}>
                   Contact Info
-                </a>
+                </button>
               </div>
+
+              {showContact && (
+                <div style={{ marginTop: 'var(--space-5)', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-4) var(--space-6)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-secondary)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)' }}>
+                  <span style={{ fontSize: 'var(--font-size-xs)', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-tertiary)' }}>Email us</span>
+                  <a href="mailto:switcherasupport@gmail.com" style={{ fontSize: 'var(--font-size-md)', fontWeight: 600, color: 'var(--color-primary-400)' }}>switcherasupport@gmail.com</a>
+                  <button type="button" className="btn btn--secondary btn--sm" onClick={() => { navigator.clipboard?.writeText('switcherasupport@gmail.com'); }}>Copy email</button>
+                </div>
+              )}
             </div>
 
           </div>
@@ -164,7 +173,7 @@ export default function Landing() {
             <div className="footer__links">
               <h4>For Candidates</h4>
               <Link to="/register">Create Profile</Link>
-              <Link to="/register">Browse Jobs</Link>
+              <Link to="/jobs">Browse Jobs</Link>
               <Link to="/register">Skill Assessments</Link>
             </div>
             <div className="footer__links">

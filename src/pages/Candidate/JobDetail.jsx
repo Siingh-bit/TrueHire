@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../api/client';
+import ShareButton from '../../components/ShareButton';
 import '../../styles/dashboard.css';
 
 export default function JobDetail() {
@@ -40,7 +41,10 @@ export default function JobDetail() {
 
   return (
     <div className="dashboard animate-fade-in-up">
-      <button onClick={() => navigate(-1)} className="btn btn--secondary btn--sm" style={{ marginBottom: 'var(--space-4)' }}>← Back</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)', flexWrap: 'wrap' }}>
+        <button onClick={() => navigate(-1)} className="btn btn--secondary btn--sm">← Back</button>
+        {job && <ShareButton url={`${window.location.origin}/jobs/${job.id}`} title={`${job.title} at ${job.company_name}`} text={`${job.title} at ${job.company_name} — apply on Switchera`} />}
+      </div>
 
       {message && <div style={{ padding: 'var(--space-3) var(--space-4)', background: message.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(232, 181, 63,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-4)', color: message.startsWith('Error') ? 'var(--color-danger-400)' : 'var(--color-accent-400)', fontSize: 'var(--font-size-sm)' }}>{message}</div>}
 

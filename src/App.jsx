@@ -11,6 +11,9 @@ import CandidateInterviews from './pages/Candidate/InterviewCalendar';
 import CandidateProfile from './pages/Candidate/Profile';
 import JobSearch from './pages/Candidate/JobSearch';
 import JobDetail from './pages/Candidate/JobDetail';
+import PublicJobs from './pages/Public/PublicJobs';
+import PublicJob from './pages/Public/PublicJob';
+import PublicCompany from './pages/Public/PublicCompany';
 import Applications from './pages/Candidate/Applications';
 import EmployerDashboard from './pages/Employer/Dashboard';
 import EmployerAnalytics from './pages/Employer/Analytics';
@@ -85,6 +88,14 @@ export default function App() {
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+
+                {/* Public job pages (SEO + shareable) */}
+                <Route path="/jobs" element={<PublicJobs />} />
+                <Route path="/jobs/location/:slug" element={<PublicJobs />} />
+                <Route path="/jobs/role/:slug" element={<PublicJobs />} />
+                <Route path="/jobs/skill/:slug" element={<PublicJobs />} />
+                <Route path="/jobs/:id" element={<PublicJob />} />
+                <Route path="/company/:id" element={<PublicCompany />} />
 
                 {/* Candidate Routes */}
                 <Route path="/candidate/agreement" element={<ProtectedRoute role="candidate"><CandidateAgreement /></ProtectedRoute>} />

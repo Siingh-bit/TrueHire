@@ -14,8 +14,8 @@ router.get('/', optionalAuth, (req, res) => {
     if (employer_id) { query += ' AND j.employer_id = ?'; params.push(Number(employer_id)); }
     else { query += ' AND j.status = ?'; params.push(status); }
 
-    if (search) { query += ' AND (j.title LIKE ? OR j.description LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
-    if (location) { query += ' AND j.location LIKE ?'; params.push(`%${location}%`); }
+    if (search) { query += ' AND (j.title ILIKE ? OR j.description ILIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
+    if (location) { query += ' AND j.location ILIKE ?'; params.push(`%${location}%`); }
     if (job_type) { query += ' AND j.job_type = ?'; params.push(job_type); }
     if (min_salary) { query += ' AND j.salary_max >= ?'; params.push(Number(min_salary)); }
     if (max_salary) { query += ' AND j.salary_min <= ?'; params.push(Number(max_salary)); }
